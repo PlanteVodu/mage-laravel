@@ -10,13 +10,20 @@ class ReferenceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_a_reference_can_be_added()
+    public static function data($array = [])
     {
-        $response = $this->post('/references', [
+        $data = [
             'category' => 'source',
             'name' => 'Cool name',
             'note' => 'Some notes',
-        ]);
+        ];
+
+        return array_merge($data, $array);
+    }
+
+    public function test_a_reference_can_be_added()
+    {
+        $response = $this->post('/references', self::data());
 
         $response->assertOk();
         $this->assertCount(1, Reference::all());
@@ -24,11 +31,7 @@ class ReferenceTest extends TestCase
 
     public function test_a_category_is_required()
     {
-        $response = $this->post('/references', [
-            'category' => '',
-            'name' => 'Cool name',
-            'note' => 'Some notes',
-        ]);
+        $response = $this->post('/references', self::data(['category' => '']));
 
         $response->assertSessionHasErrors('category');
     }
@@ -38,53 +41,33 @@ class ReferenceTest extends TestCase
         $allowedCategories = ['source', 'bibliography'];
 
         foreach ($allowedCategories as $category) {
-            $response = $this->post('/references', [
-                'category' => 'source',
-                'name' => 'Cool name',
-                'note' => 'Some notes',
-            ]);
+            $response = $this->post('/references', self::data(['category' => $category]));
 
             $response->assertOk();
         }
 
-        $response = $this->post('/references', [
-            'category' => 'other',
-            'name' => 'Cool name',
-            'note' => 'Some notes',
-        ]);
+        $response = $this->post('/references', self::data(['category' => 'other']));
 
         $response->assertSessionHasErrors('category');
     }
 
     public function test_a_name_is_required()
     {
-        $response = $this->post('/references', [
-            'category' => 'source',
-            'name' => '',
-            'note' => 'Some notes',
-        ]);
+        $response = $this->post('/references', self::data(['name' => '']));
 
         $response->assertSessionHasErrors('name');
     }
 
     public function test_note_is_optionnal()
     {
-        $response = $this->post('/references', [
-            'category' => 'source',
-            'name' => 'Cool name',
-            'note' => '',
-        ]);
+        $response = $this->post('/references', self::data(['note' => '']));
 
         $response->assertOk();
     }
 
     public function test_a_reference_can_be_updated()
     {
-        $response = $this->post('/references', [
-            'category' => 'source',
-            'name' => 'Cool name',
-            'note' => 'Some notes',
-        ]);
+        $response = $this->post('/references', self::data());
 
         $reference = Reference::first();
 
