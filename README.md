@@ -106,5 +106,17 @@ These commands create 3 files :
 
 I then wrote tests for these resources, following the [Coder's Tape's tutorial][TDD Laravel Introduction by Coder's Tape].
 
+## References' features testing
+
+The next resource is Reference, as it's simple to handle and is somehow related to the Actor resource.
+
+I first generated the associated controller, model and migration files :
+
+```bash
+php artisan make:controller ReferencesController
+php artisan make:model Reference --migration
+```
+
+Then, I wrote the same type of tests, as `Actor` and `Reference` have the same attributes.  The main difference lies in Reference having a `category` field which is an enumeration made of two values : 'source' and 'bibliography'. I used the `in` Rule to validate that.
 
 [TDD Laravel Introduction by Coder's Tape]: https://www.youtube.com/watch?v=0Rjsuw1ScXg&list=PLpzy7FIRqpGAbkfdxo1MwOS9xjG3O3z1y&index=1
