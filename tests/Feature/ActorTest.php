@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Actor;
+use App\Reference;
+use Tests\Feature\ReferenceTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -65,5 +67,70 @@ class ActorTest extends TestCase
 
         $this->assertEquals('New name', Actor::first()->name);
         $this->assertEquals('New notes', Actor::first()->note);
+    }
+
+    public function test_references_can_be_added()
+    {
+        $this->post('/references', [
+            'category' => 'source',
+            'name' => 'Cool name',
+            'note' => 'Some notes',
+        ]);
+        $this->post('/references', [
+            'category' => 'source',
+            'name' => 'Another name',
+            'note' => 'Some notes',
+        ]);
+
+        $response = $this->post('/actors', [
+            'name' => 'Cool name',
+            'note' => 'Some notes',
+            'references' => Reference::all()->modelKeys(),
+        ]);
+
+        $response->assertOk();
+        $this->assertCount(1, Actor::all());
+        $this->assertCount(2, Actor::first()->references);
+        $this->assertEquals(Reference::first()->id, Actor::first()->references[0]->id);
+    }
+
+    public function test_references_can_be_removed()
+    {
+        $this->post('/references', [
+            'category' => 'source',
+            'name' => 'Cool name',
+            'note' => 'Some notes',
+        ]);
+        $this->post('/references', [
+            'category' => 'source',
+            'name' => 'Another name',
+            'note' => 'Some notes',
+        ]);
+
+        $response = $this->post('/actors', [
+            'name' => 'Cool name',
+            'note' => 'Some notes',
+            'references' => Reference::all()->modelKeys(),
+        ]);
+
+        $actor = Actor::first();
+
+        $response = $this->patch('/actors/' . $actor->id, [
+            'name' => 'New name',
+            'note' => 'New notes',
+            'references' => [Reference::first()->id],
+        ]);
+
+        $response->assertOk();
+        $this->assertCount(1, Actor::first()->references);
+
+        $response = $this->patch('/actors/' . $actor->id, [
+            'name' => 'New name',
+            'note' => 'New notes',
+            'references' => [],
+        ]);
+
+        $response->assertOk();
+        $this->assertCount(0, Actor::first()->references);
     }
 }

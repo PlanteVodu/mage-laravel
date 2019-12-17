@@ -119,4 +119,14 @@ php artisan make:model Reference --migration
 
 Then, I wrote the same type of tests, as `Actor` and `Reference` have the same attributes.  The main difference lies in Reference having a `category` field which is an enumeration made of two values : 'source' and 'bibliography'. I used the `in` Rule to validate that.
 
+## Actor's References
+
+- [Eloquent: Many-to-many relationship](https://laravel.com/docs/6.x/eloquent-relationships#many-to-many)
+- [Validation: Validating arrays](https://laravel.com/docs/6.x/validation#validating-arrays)
+
+```bash
+php artisan make:migration actor_reference
+```
+
+
 [TDD Laravel Introduction by Coder's Tape]: https://www.youtube.com/watch?v=0Rjsuw1ScXg&list=PLpzy7FIRqpGAbkfdxo1MwOS9xjG3O3z1y&index=1
