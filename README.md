@@ -90,4 +90,21 @@ Then I could finally run the first test :
 ./vendor/bin/phpunit
 ```
 
+## Actor's features testing
+
+First, we create Actors resources :
+
+```bash
+php artisan make:controller ActorsController
+php artisan make:model Actor --migration
+```
+
+These commands create 3 files :
+- A controller
+- A model
+- And a migration file to create the table in the database
+
+I then wrote tests for these resources, following the [Coder's Tape's tutorial][TDD Laravel Introduction by Coder's Tape].
+
+
 [TDD Laravel Introduction by Coder's Tape]: https://www.youtube.com/watch?v=0Rjsuw1ScXg&list=PLpzy7FIRqpGAbkfdxo1MwOS9xjG3O3z1y&index=1
