@@ -12,8 +12,16 @@ class ActorsController extends Controller
     {
         $actor = Actor::create($this->validateRequest($request));
         Reference::setReferences($request, $actor);
+        $this->setKinships($request, $actor);
+    }
 
-        // Handling Kinships
+    public function update(Request $request, Actor $actor)
+    {
+        $actor->update($this->validateRequest($request));
+        Reference::setReferences($request, $actor);
+    }
+
+    protected function setKinships(Request $request, Actor $actor) {
         $data = $request->validate([
             'kinships.*.kinship_id' => [
                 'exists:kinships,id',
@@ -25,21 +33,12 @@ class ActorsController extends Controller
             ],
         ]);
 
-        // dump($request);
-        // dump($data);
-
         $kinships = [];
         if (array_key_exists('kinships', $data)) {
             $kinships = $data['kinships'];
         }
 
         $actor->kinships()->sync($kinships);
-    }
-
-    public function update(Request $request, Actor $actor)
-    {
-        $actor->update($this->validateRequest($request));
-        Reference::setReferences($request, $actor);
     }
 
     protected function validateRequest(Request $request)
