@@ -16,3 +16,6 @@ Route::patch('/actors/{actor}', 'ActorsController@update');
 
 Route::post('/references', 'ReferencesController@store');
 Route::patch('/references/{reference}', 'ReferencesController@update');
+
+Route::post('kinships', 'KinshipsController@store');
+Route::patch('/kinships/{kinship}', 'KinshipsController@update');
