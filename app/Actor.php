@@ -12,4 +12,9 @@ class Actor extends Model
     {
         return $this->belongsToMany('App\Reference');
     }
+
+    public function kinships()
+    {
+        return $this->belongsToMany('App\Kinship');
+    }
 }

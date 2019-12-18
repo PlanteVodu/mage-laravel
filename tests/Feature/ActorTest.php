@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Actor;
 use App\Reference;
+use App\Kinship;
 use Tests\Feature\ReferenceTest;
+// use Tests\Feature\KinshipTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -93,5 +95,47 @@ class ActorTest extends TestCase
 
         $response->assertOk();
         $this->assertCount(0, Actor::first()->references);
+    }
+
+    public function test_kinships_can_be_added()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->post('/kinships', KinshipTest::data());
+        $this->post('/kinships', KinshipTest::data(['name' => 'Another name']));
+
+        $this->post('/actors', self::data(['name' => 'Another name']));
+        $this->post('/actors', self::data(['name' => 'Yet another name']));
+
+        $data = self::data(['kinships' => Kinship::all()->modelKeys()]);
+        $response = $this->post('/actors', $data);
+
+        $response->assertOk();
+        $this->assertCount(3, Actor::all());
+        // $this->assertCount(1, Actor::first()->kinships);
+        $this->assertCount(2, Actor::find(3)->kinships);
+        // $this->assertEquals(Kinship::first()->id, Actor::first()->kinships[0]->id);
+    }
+
+    public function test_kinships_can_be_removed()
+    {
+        $this->post('/kinships', KinshipTest::data());
+        $this->post('/kinships', KinshipTest::data(['name' => 'Another name']));
+
+        $response = $this->post('/actors', self::data(['kinships' => Kinship::all()->modelKeys()]));
+
+        $actor = Actor::first();
+
+        $response = $this->patch('/actors/' . $actor->id,
+                                 self::data(['kinships' => [Kinship::first()->id]]));
+
+        $response->assertOk();
+        $this->assertCount(1, Actor::first()->kinships);
+
+        $response = $this->patch('/actors/' . $actor->id,
+                                 self::data(['kinships' => []]));
+
+        $response->assertOk();
+        $this->assertCount(0, Actor::first()->kinships);
     }
 }

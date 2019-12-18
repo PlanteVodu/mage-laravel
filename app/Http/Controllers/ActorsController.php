@@ -12,6 +12,18 @@ class ActorsController extends Controller
     {
         $actor = Actor::create($this->validateRequest($request));
         Reference::setReferences($request, $actor);
+
+        // Handling Kinships
+        $data = $request->validate([
+            'kinships.*' => '',
+        ]);
+
+        $kinships = [];
+        if (array_key_exists('kinships', $data)) {
+            $kinships = $data['kinships'];
+        }
+
+        $actor->kinships()->sync($kinships);
     }
 
     public function update(Request $request, Actor $actor)

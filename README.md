@@ -121,12 +121,103 @@ Then, I wrote the same type of tests, as `Actor` and `Reference` have the same a
 
 ## Actor's References
 
-- [Eloquent: Many-to-many relationship](https://laravel.com/docs/6.x/eloquent-relationships#many-to-many)
-- [Validation: Validating arrays](https://laravel.com/docs/6.x/validation#validating-arrays)
+Actors can have several associated References. This can be represented as a many-to-many relationship, or n:n.
+
+I first wrote the tests. I first create a Reference, then an Actor with an array of References. I then check for the number of References for the created actor.
+
+### Request validation
+
+First, we handle the request data. We receive an array of References' ids, and we have to check that each value corresponds to an existing row inside the `references` table. I figured that I would need an [array validator](https://laravel.com/docs/6.x/validation#validating-arrays) for that :
+
+```php
+$data = $request->validate([
+    'references.*' => 'exists:references,id',
+]);
+```
+
+If an empty array is passed to `validate()`, the `$data`'s `references` key will not be set, so we have to check if it exists before using it :
+
+```php
+$references = [];
+if (array_key_exists('references', $data)) {
+    $references = $data['references'];
+}
+```
+
+### Applying the changes in the database
+
+Then, we need to make the sent references and the information stored in the database to be the same. I.e, when no references are sent, it means that we have to remove all References to the Actor from the database. We use the `sync` method to accomplish that :
+
+```php
+$actor->references()->sync($references);
+``` 
+
+### Creating the intermediate table
+
+Next, is the intermediate table that we will use to store our many-to-many relationships between Actor and Reference. I first thought that it was generated automatically by Laravel, but not. I used an Artisan command to do that :
 
 ```bash
 php artisan make:migration actor_reference
 ```
+
+And then defined the main keys and also the foreign key references, to have my database properly structured :
+
+```php
+
+Schema::create('actor_reference', function (Blueprint $table) {
+    $table->unsignedBigInteger('actor_id');
+    $table->unsignedBigInteger('reference_id');
+
+    $table->foreign('actor_id')->references('id')->on('actors');
+    $table->foreign('reference_id')->references('id')->on('references');
+});
+```
+
+### Defining the many-to-many relationship
+
+Defining an unidirectionnal [many-to-many relationship](https://laravel.com/docs/6.x/eloquent-relationships#many-to-many) is fairly simple thanks to Eloquent. We just need to indicates that an Actor can have multiple References like this :
+
+```php
+public function references()
+{
+    return $this->belongsToMany('App\Reference');
+}
+```
+
+At first, it can be a little confusing why an Actor should "belongs to many References"... But it makes sens, as it's only defined in this way (References do not "belong to many Actors"). And at the end, the Actor object really has the `references` stored in it.
+
+### Questionning the Request validator position
+
+---
+
+## Kinship
+
+```bash
+php artisan make:controller KinshipsController
+php artisan make:model Kinship --migration
+php artisan make:migration create_actor_kinship_table
+```
+
+[Defining Custom Intermediate Table Models](https://laravel.com/docs/6.x/eloquent-relationships#defining-custom-intermediate-table-models)
+
+php artisan make:migration create_kinshippables_table
+
+- [X] Move ActorReferenceTest into Actor (or else we will have too many files)
+- [ ] Polymorphic one-to-many References, so we will not have to handle too many tables
+- [ ] Polymorphic one-to-many Places (Family, ActorRole). Attention for ActorRoleAndPlace : date on the relation actor_has_role, and not place.
+- [ ] Use Model Factories ?
+- [ ] PHP Traits for Dates (and possibly Notes too ?)
+
+---
+
+## Notes
+
+Possible Traits :
+- [ ] Reference : No, because Reference model exists independantly
+- [X] Date : date_start, date_end, date_start_accuracy, date_end_accuracy
+- [X] Note
+Because, they are part of the Model.
+Why not put them into separate tables (and models) ? Performance, so we don't need to abuse of JOINing tables everytime.
 
 
 [TDD Laravel Introduction by Coder's Tape]: https://www.youtube.com/watch?v=0Rjsuw1ScXg&list=PLpzy7FIRqpGAbkfdxo1MwOS9xjG3O3z1y&index=1
