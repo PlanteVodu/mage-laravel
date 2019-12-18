@@ -15,8 +15,18 @@ class ActorsController extends Controller
 
         // Handling Kinships
         $data = $request->validate([
-            'kinships.*' => '',
+            'kinships.*.kinship_id' => [
+                'exists:kinships,id',
+                'required_with:kinships.*.actor_id',
+            ],
+            'kinships.*.relative_id' => [
+                'exists:actors,id',
+                'required_with:kinships.*.kinship_id',
+            ],
         ]);
+
+        // dump($request);
+        // dump($data);
 
         $kinships = [];
         if (array_key_exists('kinships', $data)) {

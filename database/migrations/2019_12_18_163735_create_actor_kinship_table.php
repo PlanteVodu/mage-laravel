@@ -14,11 +14,13 @@ class CreateActorKinshipTable extends Migration
     public function up()
     {
         Schema::create('actor_kinship', function (Blueprint $table) {
-            $table->unsignedBigInteger('actor_id');
             $table->unsignedBigInteger('kinship_id');
+            $table->unsignedBigInteger('actor_id');
+            $table->unsignedBigInteger('relative_id');
 
-            $table->foreign('actor_id')->references('id')->on('actors');
             $table->foreign('kinship_id')->references('id')->on('kinships');
+            $table->foreign('actor_id')->references('id')->on('actors');
+            $table->foreign('relative_id')->references('id')->on('actors');
         });
     }
 

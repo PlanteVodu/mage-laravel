@@ -107,13 +107,49 @@ class ActorTest extends TestCase
         $this->post('/actors', self::data(['name' => 'Another name']));
         $this->post('/actors', self::data(['name' => 'Yet another name']));
 
-        $data = self::data(['kinships' => Kinship::all()->modelKeys()]);
+        $actorsKeys = Actor::all()->modelKeys();
+        $kinshipsKeys = Kinship::all()->modelKeys();
+
+        $data = self::data([
+            'kinships' => [
+                0 => [
+                    'kinship_id' => $actorsKeys[0],
+                    'relative_id' => $kinshipsKeys[0],
+                ],
+                1 => [
+                    'kinship_id' => $actorsKeys[1],
+                    'relative_id' => $kinshipsKeys[1],
+                ],
+            ],
+        ]);
+
         $response = $this->post('/actors', $data);
+        // dump(\App\ActorKinship::all());
 
         $response->assertOk();
         $this->assertCount(3, Actor::all());
-        // $this->assertCount(1, Actor::first()->kinships);
         $this->assertCount(2, Actor::find(3)->kinships);
+        $this->assertEquals(1, Actor::find(3)->kinships[0]->kinship->relative()->id);
+        $this->assertEquals(2, Actor::find(3)->kinships[1]->kinship->relative()->id);
+
+        // dump(Actor::find(3)->kinships);
+
+        // dump(Actor::find(3)->kinships[0]->pivot->actor());
+        // dump(Actor::find(3)->kinships[0]->pivot->actor());
+        // dump(Actor::find(3)->kinships[1]->pivot->actor());
+        // dump(Actor::find(3)->kinships[0]->pivot->relative_id);
+        // dump(Actor::find(3)->kinships[1]->pivot->relative_id);
+        // dump(Actor::find(3)->relatives);
+
+        $this->assertCount(1, Actor::find(1)->kinships);
+        $this->assertEquals(3, Actor::find(1)->kinships[0]->kinship->relative()->id);
+
+        $this->assertCount(1, Actor::find(2)->kinships);
+        $this->assertEquals(3, Actor::find(2)->kinships[0]->kinship->relative()->id);
+        // dump(Actor::find(1)->kinships);
+        // dump(Actor::find(2)->kinships);
+        // $this->assert();
+
         // $this->assertEquals(Kinship::first()->id, Actor::first()->kinships[0]->id);
     }
 

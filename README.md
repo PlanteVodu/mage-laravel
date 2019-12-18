@@ -198,7 +198,13 @@ php artisan make:model Kinship --migration
 php artisan make:migration create_actor_kinship_table
 ```
 
-[Defining Custom Intermediate Table Models](https://laravel.com/docs/6.x/eloquent-relationships#defining-custom-intermediate-table-models)
+It took me a moment to figure that I would need a [custom intermediate table model](https://laravel.com/docs/6.x/eloquent-relationships#defining-custom-intermediate-table-models).
+
+```bash
+php artisan make:model ActorKinship -m
+```
+
+[Has many through](https://laravel.com/docs/6.x/eloquent-relationships#has-many-through)
 
 php artisan make:migration create_kinshippables_table
 
