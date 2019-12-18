@@ -19,6 +19,7 @@ class ActorsController extends Controller
     {
         $actor->update($this->validateRequest($request));
         Reference::setReferences($request, $actor);
+        $this->setKinships($request, $actor);
     }
 
     protected function setKinships(Request $request, Actor $actor) {
