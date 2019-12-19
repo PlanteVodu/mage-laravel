@@ -18,18 +18,18 @@ class ActorKinship extends Pivot
     public function actor()
     {
         // dump($this->getParentKey());
-        if ($this->actor_id == $this->actor_id) {
-            return Actor::find($this->actor_id);
-        }
+        // if ($this->actor_id == $this->actor_id) {
+            // return Actor::find($this->actor_id);
+        // }
         return Actor::find($this->relative_id);
     }
 
     public function relative()
     {
         // dump($this->getParentKey());
-        if ($this->actor_id == $this->actor_id) {
-            return Actor::find($this->relative_id);
-        }
+        // if ($this->actor_id == $this->actor_id) {
+            // return Actor::find($this->relative_id);
+        // }
         return Actor::find($this->actor_id);
     }
 }
