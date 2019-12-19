@@ -36,7 +36,7 @@ class ActorsController extends Controller
 
         $kinships = [];
         if (array_key_exists('kinships', $data)) {
-            dump($kinships);
+            // dump($kinships);
             $kinships = $data['kinships'];
         }
 

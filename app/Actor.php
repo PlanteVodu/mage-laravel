@@ -55,6 +55,6 @@ class Actor extends Model
     public function kinships()
     {
         return $this->hasMany('App\ActorKinship')
-            ->where('relative_id', $this->getKey());
+            ->orWhere('relative_id', $this->getKey());
     }
 }
