@@ -36,10 +36,11 @@ class ActorsController extends Controller
 
         $kinships = [];
         if (array_key_exists('kinships', $data)) {
+            dump($kinships);
             $kinships = $data['kinships'];
         }
 
-        $actor->kinships()->sync($kinships);
+        $actor->kinships()->createMany($kinships);
     }
 
     protected function validateRequest(Request $request)
