@@ -137,12 +137,12 @@ class ActorTest extends TestCase
         // dump(Actor::find(3)->kinships());
         // dump(get_object_vars(Actor::find(3)->kinships()));
         // dump(get_class_vars(get_class(Actor::find(3)->kinships())));
-        // dump(get_class_methods(get_class(Actor::find(3)->kinships())));
+        // dump(get_class_methods(get_class(Actor::find(3)->kinships)));
         // dump(Actor::find(3)->kinships()->getParentKey());
         // dump(Actor::find(3)->kinships()->getParent());
         // dump(Actor::find(1)->kinships()->getParent());
         // dump(Actor::find(3)->kinships()->getRelated());
-        dump(Actor::find(3)->kinships[0]->actor());
+        // dump(get_class(Actor::find(3)->kinships));
 
 
         $this->assertCount(2, Actor::find(3)->kinships);

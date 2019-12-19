@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateActorKinshipTable extends Migration
+class CreateActorKinshipsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateActorKinshipTable extends Migration
      */
     public function up()
     {
-        Schema::create('actor_kinship', function (Blueprint $table) {
+        Schema::create('actor_kinships', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('kinship_id');
             $table->unsignedBigInteger('actor_id');
@@ -33,6 +33,6 @@ class CreateActorKinshipTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('actor_kinship');
+        Schema::dropIfExists('actor_kinships');
     }
 }
