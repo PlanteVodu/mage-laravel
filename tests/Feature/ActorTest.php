@@ -131,14 +131,14 @@ class ActorTest extends TestCase
         $this->assertCount(2, ActorKinship::all());
 
         $this->assertCount(2, Actor::find(3)->kinships);
-        $this->assertEquals(1, Actor::find(3)->kinships[0]->relative()->id);
-        $this->assertEquals(2, Actor::find(3)->kinships[1]->relative()->id);
+        $this->assertEquals(1, Actor::find(3)->kinships[0]->relative(3)->id);
+        $this->assertEquals(2, Actor::find(3)->kinships[1]->relative(3)->id);
 
         $this->assertCount(1, Actor::find(1)->kinships);
-        $this->assertEquals(3, Actor::find(1)->kinships[0]->actor()->id);
+        $this->assertEquals(3, Actor::find(1)->kinships[0]->relative(1)->id);
 
         $this->assertCount(1, Actor::find(2)->kinships);
-        $this->assertEquals(3, Actor::find(2)->kinships[0]->actor()->id);
+        $this->assertEquals(3, Actor::find(2)->kinships[0]->relative(1)->id);
     }
 
     public function test_kinships_can_be_removed()

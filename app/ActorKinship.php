@@ -17,19 +17,19 @@ class ActorKinship extends Model
         return Kinship::find($this->kinship_id);
     }
 
-    public function actor()
+    public function actor($actorId)
     {
-        // if ($this->actor_id == $this->actor_id) {
-            // return Actor::find($this->actor_id);
-        // }
+        if ($actorId == $this->relative_id) {
+            return Actor::find($this->relative_id);
+        }
         return Actor::find($this->actor_id);
     }
 
-    public function relative()
+    public function relative($actorId)
     {
-        // if ($this->actor_id == $this->actor_id) {
-            // return Actor::find($this->relative_id);
-        // }
-        return Actor::find($this->relative_id);
+        if ($actorId == $this->actor_id) {
+            return Actor::find($this->relative_id);
+        }
+        return Actor::find($this->actor_id);
     }
 }
