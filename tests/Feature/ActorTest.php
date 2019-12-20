@@ -114,11 +114,11 @@ class ActorTest extends TestCase
         $data = self::data([
             'kinships' => [
                 0 => [
-                    'kinship_id' => $actorsKeys[0],
+                    'kinship_id' => $actorsKeys[1],
                     'relative_id' => $kinshipsKeys[0],
                 ],
                 1 => [
-                    'kinship_id' => $actorsKeys[1],
+                    'kinship_id' => $actorsKeys[0],
                     'relative_id' => $kinshipsKeys[1],
                 ],
             ],
@@ -129,34 +129,16 @@ class ActorTest extends TestCase
         $response->assertOk();
         $this->assertCount(3, Actor::all());
         $this->assertCount(2, ActorKinship::all());
-        // dump(ActorKinship::all());
-        // dump(Actor::find(3)->kinshipssss[0]->kinship());
-        // dump(Actor::find(3)->kinshipssss[0]->actor());
-        // dump(Actor::find(3)->kinshipssss[0]->relative());
-        // dump(Actor::find(3)->kinships()->getParentKey());
-        // dump(Actor::find(3)->kinships());
-        // dump(get_object_vars(Actor::find(3)->kinships()));
-        // dump(get_class_vars(get_class(Actor::find(3)->kinships())));
-        // dump(get_class_methods(get_class(Actor::find(3)->kinships)));
-        // dump(Actor::find(3)->kinships()->getParentKey());
-        // dump(Actor::find(3)->kinships()->getParent());
-        // dump(Actor::find(1)->kinships()->getParent());
-        // dump(Actor::find(3)->kinships()->getRelated());
-        // dump(get_class(Actor::find(3)->kinships));
 
-        // dump(Actor::find(3)->kinships());
-        dump(Actor::find(3)->kinships);
+        $this->assertCount(2, Actor::find(3)->kinships);
+        $this->assertEquals(1, Actor::find(3)->kinships[0]->relative()->id);
+        $this->assertEquals(2, Actor::find(3)->kinships[1]->relative()->id);
 
+        $this->assertCount(1, Actor::find(1)->kinships);
+        $this->assertEquals(3, Actor::find(1)->kinships[0]->actor()->id);
 
-        // $this->assertCount(2, Actor::find(3)->kinships);
-        // $this->assertEquals(1, Actor::find(3)->kinships[0]->relative()->id);
-        // $this->assertEquals(2, Actor::find(3)->kinships[1]->relative()->id);
-
-        // $this->assertCount(1, Actor::find(1)->kinships);
-        // $this->assertEquals(3, Actor::find(1)->kinships[0]->relative()->id);
-
-        // $this->assertCount(1, Actor::find(2)->kinships);
-        // $this->assertEquals(3, Actor::find(2)->kinships[0]->relative()->id);
+        $this->assertCount(1, Actor::find(2)->kinships);
+        $this->assertEquals(3, Actor::find(2)->kinships[0]->actor()->id);
     }
 
     public function test_kinships_can_be_removed()
