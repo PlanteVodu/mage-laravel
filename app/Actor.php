@@ -56,7 +56,35 @@ class Actor extends Model
     {
         $relation = $this->hasMany('App\ActorKinship')
             ->orWhere('relative_id', $this->getKey());
-        // dump($relation);
+        dump(get_class_methods(get_class($this)));
+        // dump(get_class_methods(get_class($relation)));
+
+        // $relation->initRelation = function() {
+
+        // }
+        // dump($relation->initRelation());
+        // dump($relation->getResults());
+        // dump($this->);
+        // dump($relation->getResults());
+
         return $relation;
+    }
+
+    public function newHasMany(\Illuminate\Database\Eloquent\Builder $query, \Illuminate\Database\Eloquent\Model $parent, $foreignKey, $localKey) {
+        // $newHasMany = parent::newHasMany($query, $parent, $foreignKey, $localKey);
+        // $newHasMany = parent::newHasMany($query, $parent, $foreignKey, $localKey);
+
+        // $newHasMany->initRelation
+
+        // return $newHasMany;
+        // return $
+    }
+}
+
+class HasManyActors extends HasMany
+{
+    public function newInitRelation(array $models, $relation)
+    {
+        $init = parent::newInitRelation($models, $relation);
     }
 }

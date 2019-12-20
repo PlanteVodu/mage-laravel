@@ -10,6 +10,8 @@ class ActorKinship extends Model
 {
     protected $guarded = [];
 
+    public $actor;
+
     public function kinship()
     {
         return Kinship::find($this->kinship_id);
