@@ -208,11 +208,19 @@ php artisan make:model ActorKinship -m
 
 php artisan make:migration create_kinshippables_table
 
+Should I create a `Feature/ActorKinshipTest` ? Should we create specific routes ? Will me make a form to add ActorKinships directly ? That was not aked. We will always set them from the Actor form. So the answer is no. We will test features from the `Feature/ActorTest`.
+
 - [X] Move ActorReferenceTest into Actor (or else we will have too many files)
 - [ ] Polymorphic one-to-many References, so we will not have to handle too many tables
 - [ ] Polymorphic one-to-many Places (Family, ActorRole). Attention for ActorRoleAndPlace : date on the relation actor_has_role, and not place.
 - [ ] Use Model Factories ?
 - [ ] PHP Traits for Dates (and possibly Notes too ?)
+
+---
+
+- [Post an Array from an HTML form without Javascript](https://stackoverflow.com/questions/9073690/post-an-array-from-an-html-form-without-javascript)
+- 
+
 
 ---
 
