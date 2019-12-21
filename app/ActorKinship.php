@@ -17,7 +17,11 @@ class ActorKinship extends Model
         return Kinship::find($this->kinship_id);
     }
 
-    public function actor($actorId)
+    /**
+     *  Return the actor from the perspective of $actor_id (if any),
+     *  or the one defined as actor in the record.
+     */
+    public function actor($actorId = '')
     {
         if ($actorId == $this->relative_id) {
             return Actor::find($this->relative_id);
@@ -25,11 +29,15 @@ class ActorKinship extends Model
         return Actor::find($this->actor_id);
     }
 
-    public function relative($actorId)
+    /**
+     *  Return the relative actor from the perspective of $actor_id (if any),
+     *  or the one defined as relative in the record.
+     */
+    public function relative($actorId = '')
     {
-        if ($actorId == $this->actor_id) {
-            return Actor::find($this->relative_id);
+        if ($actorId == $this->relative_id) {
+            return Actor::find($this->actor_id);
         }
-        return Actor::find($this->actor_id);
+        return Actor::find($this->relative_id);
     }
 }
