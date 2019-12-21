@@ -37,29 +37,15 @@ class ActorsController extends Controller
         ]);
 
         $existingKinships = $actor->kinships;
-        // dump(get_class($existingKinships));
 
         $kinships = [];
         if (array_key_exists('kinships', $data)) {
-            // dd(get_class_methods(get_class($actor->kinships)));
             $kinships = $data['kinships'];
-            // dump(get_class($kinships));
-            // dump(get_class_methods(get_class($existingKinships)));
-            // dump($kinships);
-            // dump($actor->kinships);
-            // dump($actor->kinships()->matchMany($kinships));
         }
-        // dump(get_class_methods(Actor::class));
-        // dump(ActorKinship::all());
+
         $kinshipss = ActorKinship::where('actor_id', $actor->getKey())
             ->orWhere('relative_id', $actor->getKey())
             ->get();
-
-        // $kinshipss->reject(function ($actor_kinship) {
-        //     // return
-        //     $key = array_search($)
-        // })
-        // ->map();
 
         $kinshipsss = [];
         foreach($kinships as $kinship) {
@@ -79,10 +65,8 @@ class ActorsController extends Controller
 
             $kinshipsss[]= $updatedKinship->getKey();
         }
-        // dump($kinships);
-        dump($kinshipss->diffKeys($kinshipsss)->modelKeys());
+
         ActorKinship::destroy($kinshipss->diffKeys($kinshipsss)->modelKeys());
-        // $kinshipss->diffKeys($kinshipsss)->delete();
     }
 
     protected function validateRequest(Request $request)

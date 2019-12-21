@@ -161,7 +161,7 @@ class ActorTest extends TestCase
                 ],
             ],
         ]);
-        dump('Inserting Actor #3');
+
         $response = $this->post('/actors', $data);
 
         // Removing the 2nd kinship
@@ -176,12 +176,9 @@ class ActorTest extends TestCase
             ],
         ]);
 
-        dump('Removing ActorKinship #2');
         $response = $this->patch('/actors/3', $data);
 
         $response->assertOk();
-
-        // Actor::find(3)->kinships[0]->actor();
 
         $this->assertCount(1, Actor::find(3)->kinships);
         $this->assertEquals(1, Actor::find(3)->kinships[0]->relative(3)->id);
@@ -192,8 +189,6 @@ class ActorTest extends TestCase
         $this->assertCount(0, Actor::find(2)->kinships);
 
         // Removing the 1st kinship
-
-        dump('Removing ActorKinship #1');
         $response = $this->patch('/actors/3', self::data());
 
         $response->assertOk();
