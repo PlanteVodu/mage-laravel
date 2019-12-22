@@ -216,6 +216,29 @@ Should I create a `Feature/ActorKinshipTest` ? Should we create specific routes 
 - [ ] Use Model Factories ?
 - [ ] PHP Traits for Dates (and possibly Notes too ?)
 
+__PDODriver__
+
+After this :
+
+```bash
+php artisan config:clear
+php artisan config:cache
+
+php artisan clear-compiled
+```
+
+I got this error :
+
+`PDOException: could not find driver`
+
+To solve it :
+
+Remove everything from `boostrap/cache` except the .gitignore file, and then run :
+
+```bash
+composer dump
+```
+
 ---
 
 - [Post an Array from an HTML form without Javascript](https://stackoverflow.com/questions/9073690/post-an-array-from-an-html-form-without-javascript)
