@@ -46,24 +46,14 @@ class ActorsController extends Controller
             $kinships = $data['kinships'];
         }
 
-        $kinshipss = ActorKinship::where('actor_id', $actor->getKey())
-            ->orWhere('relative_id', $actor->getKey())
-            ->get();
-
         $updatedActorKinships = [];
         foreach($kinships as $kinship) {
             // Set the Kinship in the right order / way / direction
             if (array_key_exists('actor_id', $kinship)) {
-                dump('setting relative_id');
                 $kinship['relative_id'] = $actor->getKey();
             } else if (array_key_exists('relative_id', $kinship)) {
-                dump('setting actor_id');
                 $kinship['actor_id'] = $actor->getKey();
-            } else {
-                dump('setting nothing');
             }
-
-            dump($kinship);
 
             $updatedKinship = ActorKinship::updateOrCreate(
                 ['actor_id' => $kinship['actor_id'],
@@ -74,13 +64,7 @@ class ActorsController extends Controller
             $updatedActorKinships[]= $updatedKinship->getKey();
         }
 
-        dump('Updated/created keys');
-        dump($updatedActorKinships);
-
-        dump('Keys to remove');
-        $modelsToRemove = array_diff($kinshipss->modelKeys(), $updatedActorKinships);
-        dump($modelsToRemove);
-
+        $modelsToRemove = array_diff($existingKinships->modelKeys(), $updatedActorKinships);
         ActorKinship::destroy($modelsToRemove);
     }
 
