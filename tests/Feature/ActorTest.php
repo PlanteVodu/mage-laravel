@@ -25,6 +25,15 @@ class ActorTest extends TestCase
         return array_merge($data, $array);
     }
 
+    public function addActorKinshipData($array = [])
+    {
+        $this->post('/kinships', KinshipTest::data());
+        $this->post('/kinships', KinshipTest::data());
+
+        $this->post('/actors', self::data());
+        $this->post('/actors', self::data());
+    }
+
     public function test_an_actor_can_be_added()
     {
         $response = $this->post('/actors', self::data());
@@ -134,7 +143,7 @@ class ActorTest extends TestCase
         $this->assertCount(2, Actor::find(3)->kinships);
     }
 
-    public function test_kinships_can_be_removed()
+    public function test_kinships_can_be_updated_and_removed()
     {
         $this->withoutExceptionHandling();
 
@@ -150,31 +159,65 @@ class ActorTest extends TestCase
         $data = self::data([
             'kinships' => [
                 0 => [
-                    'kinship_id' => $actorsKeys[1],
-                    'relative_id' => $kinshipsKeys[0],
-                    'inversed' => false,
+                    'kinship_id' => $kinshipsKeys[1],
+                    'relative_id' => $actorsKeys[0],
                 ],
                 1 => [
-                    'kinship_id' => $actorsKeys[0],
-                    'relative_id' => $kinshipsKeys[1],
-                    'inversed' => false,
+                    'kinship_id' => $kinshipsKeys[0],
+                    'relative_id' => $actorsKeys[1],
                 ],
             ],
         ]);
 
+        dump('====================');
+        dump('Adding ActorKinships');
+
         $response = $this->post('/actors', $data);
+
+        // Inverse the 2nd kinship
+
+        $data = self::data([
+            'kinships' => [
+                0 => [
+                    'kinship_id' => $kinshipsKeys[1],
+                    'relative_id' => $actorsKeys[0],
+                ],
+                1 => [
+                    'kinship_id' => $kinshipsKeys[0],
+                    'actor_id' => $actorsKeys[1],
+                ],
+            ],
+        ]);
+
+        dump('====================');
+        dump('Updating ActorKinships');
+
+        $response = $this->patch('/actors/3', $data);
+
+        $response->assertOk();
+
+        $this->assertCount(2, Actor::find(3)->kinships);
+        $this->assertEquals(1, Actor::find(3)->kinships[0]->relative(3)->id);
+
+        $this->assertCount(1, Actor::find(1)->kinships);
+        $this->assertEquals(3, Actor::find(1)->kinships[0]->relative(1)->id);
+
+        $this->assertCount(1, Actor::find(2)->kinships);
+        $this->assertEquals(3, Actor::find(2)->kinships[0]->relative(2)->id);
 
         // Removing the 2nd kinship
 
         $data = self::data([
             'kinships' => [
                 0 => [
-                    'kinship_id' => $actorsKeys[1],
-                    'relative_id' => $kinshipsKeys[0],
-                    'inversed' => false,
+                    'kinship_id' => $kinshipsKeys[1],
+                    'relative_id' => $actorsKeys[0],
                 ],
             ],
         ]);
+
+        dump('====================');
+        dump('Remove ActorKinship #1');
 
         $response = $this->patch('/actors/3', $data);
 
@@ -187,6 +230,9 @@ class ActorTest extends TestCase
         $this->assertEquals(3, Actor::find(1)->kinships[0]->relative(1)->id);
 
         $this->assertCount(0, Actor::find(2)->kinships);
+
+        dump('====================');
+        dump('Remove ActorKinship #2');
 
         // Removing the 1st kinship
         $response = $this->patch('/actors/3', self::data());

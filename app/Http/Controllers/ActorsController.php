@@ -27,13 +27,16 @@ class ActorsController extends Controller
         $data = $request->validate([
             'kinships.*.kinship_id' => [
                 'exists:kinships,id',
-                'required_with:kinships.*.actor_id',
+                'required',
+            ],
+            'kinships.*.actor_id' => [
+                'exists:actors,id',
+                'required_without:kinships.*.relative_id',
             ],
             'kinships.*.relative_id' => [
                 'exists:actors,id',
-                'required_with:kinships.*.kinship_id',
+                'required_without:kinships.*.actor_id',
             ],
-            'kinships.*.inversed' => 'boolean|required',
         ]);
 
         $existingKinships = $actor->kinships;
@@ -47,15 +50,20 @@ class ActorsController extends Controller
             ->orWhere('relative_id', $actor->getKey())
             ->get();
 
-        $kinshipsss = [];
+        $updatedActorKinships = [];
         foreach($kinships as $kinship) {
             // Set the Kinship in the right order / way / direction
-            if ($kinship['inversed'] == true) {
-                $kinship['actor_id'] = $kinship['relative_id'];
+            if (array_key_exists('actor_id', $kinship)) {
+                dump('setting relative_id');
                 $kinship['relative_id'] = $actor->getKey();
-            } else {
+            } else if (array_key_exists('relative_id', $kinship)) {
+                dump('setting actor_id');
                 $kinship['actor_id'] = $actor->getKey();
+            } else {
+                dump('setting nothing');
             }
+
+            dump($kinship);
 
             $updatedKinship = ActorKinship::updateOrCreate(
                 ['actor_id' => $kinship['actor_id'],
@@ -63,10 +71,17 @@ class ActorsController extends Controller
                 ['kinship_id' => $kinship['kinship_id']]
             );
 
-            $kinshipsss[]= $updatedKinship->getKey();
+            $updatedActorKinships[]= $updatedKinship->getKey();
         }
 
-        ActorKinship::destroy($kinshipss->diffKeys($kinshipsss)->modelKeys());
+        dump('Updated/created keys');
+        dump($updatedActorKinships);
+
+        dump('Keys to remove');
+        $modelsToRemove = array_diff($kinshipss->modelKeys(), $updatedActorKinships);
+        dump($modelsToRemove);
+
+        ActorKinship::destroy($modelsToRemove);
     }
 
     protected function validateRequest(Request $request)
