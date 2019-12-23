@@ -230,4 +230,44 @@ class ActorTest extends TestCase
 
         $this->assertCount(0, Actor::find(1)->kinships);
     }
+
+    public function test_kinships_kinship_is_required()
+    {
+        $this->post('/kinships', KinshipTest::data());
+
+        $this->post('/actors', self::data(['name' => 'Another name']));
+
+        $actorsKeys = Actor::all()->modelKeys();
+        $kinshipsKeys = Kinship::all()->modelKeys();
+
+        $data = self::data([
+            'kinships' => [ 0 => [ 'actor_id' => 1 ] ]
+        ]);
+
+
+        $response = $this->post('/actors', $data);
+
+        $response->assertSessionHasErrors('kinships.0.kinship_id');
+        $this->assertCount(0, ActorKinship::all());
+    }
+
+    public function test_kinships_either_actor_or_relative_is_required()
+    {
+        $this->post('/kinships', KinshipTest::data());
+
+        $this->post('/actors', self::data(['name' => 'Another name']));
+
+        $actorsKeys = Actor::all()->modelKeys();
+        $kinshipsKeys = Kinship::all()->modelKeys();
+
+        $data = self::data([
+            'kinships' => [ 0 => [ 'kinship_id' => 1 ] ]
+        ]);
+
+
+        $response = $this->post('/actors', $data);
+
+        $response->assertSessionHasErrors(['kinships.0.actor_id', 'kinships.0.relative_id']);
+        $this->assertCount(0, ActorKinship::all());
+    }
 }
