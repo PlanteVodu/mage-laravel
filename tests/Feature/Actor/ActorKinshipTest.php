@@ -186,7 +186,8 @@ class ActorKinshipFeatureTest extends TestCase
 
         $response = $this->post('/actors', $data);
 
-        $response->assertSessionHasErrors(['kinships.0.actor_id', 'kinships.0.relative_id']);
+        $response->assertSessionHasErrors('kinships.0.actor_id');
+        $response->assertSessionHasErrors('kinships.0.relative_id');
         $this->assertCount(0, ActorKinship::all());
     }
 
