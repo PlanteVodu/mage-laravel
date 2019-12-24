@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Dates;
 
 class CreateActorsTable extends Migration
 {
@@ -21,9 +22,8 @@ class CreateActorsTable extends Migration
             $table->date('date_start')->nullable();
             $table->date('date_end')->nullable();
 
-            $enum = ['exactly', 'circa', 'before', 'after'];
-            $table->enum('date_start_accuracy', $enum)->nullable();
-            $table->enum('date_end_accuracy', $enum)->nullable();
+            $table->enum('date_start_accuracy', Dates::$possible_accuracies)->nullable();
+            $table->enum('date_end_accuracy', Dates::$possible_accuracies)->nullable();
 
             $table->timestamps();
         });

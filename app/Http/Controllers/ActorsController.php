@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Actor;
 use App\Reference;
 use App\ActorKinship;
+use App\Dates;
 
 class ActorsController extends Controller
 {
@@ -73,21 +73,11 @@ class ActorsController extends Controller
 
     protected function validateRequest(Request $request)
     {
-        $accuracies = Rule::in(['exactly', 'circa', 'before', 'after']);
-
-        return $request->validate([
+        $rules = [
             'name' => 'required',
             'note' => '',
-            'date_start' => [
-                'date',
-                'required_with:date_start_accuracy'
-            ],
-            'date_end' => [
-                'date',
-                'required_with:date_end_accuracy',
-            ],
-            'date_start_accuracy' => [$accuracies],
-            'date_end_accuracy' => [$accuracies],
-        ]);
+        ];
+        $rules = array_merge(Dates::getValidationRules(), $rules);
+        return $request->validate($rules);
     }
 }
