@@ -17,6 +17,14 @@ class CreateActorsTable extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('note')->nullable();
+
+            $table->date('date_start')->nullable();
+            $table->date('date_end')->nullable();
+
+            $enum = ['exactly', 'circa', 'before', 'after'];
+            $table->enum('date_start_accuracy', $enum)->nullable();
+            $table->enum('date_end_accuracy', $enum)->nullable();
+
             $table->timestamps();
         });
     }
