@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Dates;
 
 class Actor extends Model
 {
+    use Dates;
+
     protected $guarded = [];
 
     public function references()

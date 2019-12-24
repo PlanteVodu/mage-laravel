@@ -2,36 +2,15 @@
 
 namespace App;
 
-use Illuminate\Validation\Rule;
+use Illuminate\Http\Request;
 
-class Dates
+trait Dates
 {
-    public static $possible_accuracies = [
-        'exactly',
-        'circa',
-        'before',
-        'after',
-    ];
-
-    public static function getValidationRules($prefix = '')
+    public function setDates(Request $request)
     {
-        if (strlen($prefix) > 0) {
-            $prefix = $prefix . '.';
-        }
-
-        $accuracies = Rule::in(self::$possible_accuracies);
-
-        return [
-            $prefix . 'date_start' => [
-                'date',
-                'required_with:date_start_accuracy'
-            ],
-            $prefix . 'date_end' => [
-                'date',
-                'required_with:date_end_accuracy',
-            ],
-            $prefix . 'date_start_accuracy' => [$accuracies],
-            $prefix . 'date_end_accuracy' => [$accuracies],
-        ];
+        $this->date_start = $request->date_start;
+        $this->date_end = $request->date_end;
+        $this->date_start_accuracy = $request->date_start_accuracy;
+        $this->date_end_accuracy = $request->date_end_accuracy;
     }
 }

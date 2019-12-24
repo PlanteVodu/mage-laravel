@@ -7,19 +7,32 @@ use App\Actor;
 use App\Reference;
 use App\ActorKinship;
 use App\Dates;
+use App\Http\Requests\StoreActor;
 
 class ActorsController extends Controller
 {
-    public function store(Request $request)
+    public function store(StoreActor $request)
     {
-        $actor = Actor::create($this->validateRequest($request));
+        $actor = new Actor;
+
+        $actor->name = $request->name;
+        $actor->note = $request->note;
+        $actor->setDates($request);
+
+        $actor->save();
+
         Reference::setReferences($request, $actor);
         $this->setKinships($request, $actor);
     }
 
-    public function update(Request $request, Actor $actor)
+    public function update(StoreActor $request, Actor $actor)
     {
-        $actor->update($this->validateRequest($request));
+        $actor->name = $request->name;
+        $actor->note = $request->note;
+        $actor->setDates($request);
+
+        $actor->save();
+
         Reference::setReferences($request, $actor);
         $this->setKinships($request, $actor);
     }
