@@ -40,4 +40,9 @@ class ActorKinship extends Model
         }
         return Actor::find($this->relative_id);
     }
+
+    public function references()
+    {
+        return $this->morphToMany('App\Reference', 'referencable');
+    }
 }

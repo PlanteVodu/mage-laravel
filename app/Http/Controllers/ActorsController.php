@@ -47,7 +47,7 @@ class ActorsController extends Controller
         }
 
         $updatedActorKinships = [];
-        foreach($kinships as $kinship) {
+        foreach(array_values($kinships) as $i => $kinship) {
             // Set the Kinship in the right order / way / direction
             if (array_key_exists('actor_id', $kinship)) {
                 $kinship['relative_id'] = $actor->getKey();
@@ -60,6 +60,8 @@ class ActorsController extends Controller
                  'relative_id' => $kinship['relative_id']],
                 ['kinship_id' => $kinship['kinship_id']]
             );
+
+            Reference::setReferences($request, $updatedKinship, 'kinships.' . $i . '.');
 
             $updatedActorKinships[]= $updatedKinship->getKey();
         }
