@@ -13,18 +13,6 @@ class Actor extends Model
         return $this->morphToMany('App\Reference', 'referencable');
     }
 
-    // public function kinships()
-    // {
-    //     return $this->belongsToMany('App\Kinship')
-    //         ->using('App\ActorKinship')
-    //         ->as('kinship')
-    //         ->wherePivot('actor_id', $this->getKey())
-    //         ->orWherePivot('relative_id', $this->getKey())
-    //         ->withPivot([
-    //             'relative_id',
-    //         ]);
-    // }
-
     public function kinships()
     {
         return $this->hasMany('App\ActorKinship')
