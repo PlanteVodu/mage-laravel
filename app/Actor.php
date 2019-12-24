@@ -10,7 +10,7 @@ class Actor extends Model
 
     public function references()
     {
-        return $this->belongsToMany('App\Reference');
+        return $this->morphToMany('App\Reference', 'referencable');
     }
 
     // public function kinships()
