@@ -56,7 +56,7 @@ class ActorKinshipFeatureTest extends TestCase
         $this->assertCount(2, Actor::find(3)->kinships);
     }
 
-    public function test_kinships_can_be_updated_and_removed()
+    public function test_kinships_can_be_updated()
     {
         $this->post('/kinships', KinshipTest::data());
         $this->post('/kinships', KinshipTest::data(['name' => 'Another name']));
@@ -102,6 +102,32 @@ class ActorKinshipFeatureTest extends TestCase
         $this->assertEquals(3, Actor::find(1)->kinships[0]->relative(1)->id);
         $this->assertCount(1, Actor::find(2)->kinships);
         $this->assertEquals(3, Actor::find(2)->kinships[0]->relative(2)->id);
+    }
+
+    public function test_kinships_can_be_removed()
+    {
+        $this->post('/kinships', KinshipTest::data());
+        $this->post('/kinships', KinshipTest::data(['name' => 'Another name']));
+
+        $this->post('/actors', self::data(['name' => 'Another name']));
+        $this->post('/actors', self::data(['name' => 'Yet another name']));
+
+        $actorsKeys = Actor::all()->modelKeys();
+        $kinshipsKeys = Kinship::all()->modelKeys();
+
+        $data = self::data([
+            'kinships' => [
+                0 => [
+                    'kinship_id' => $kinshipsKeys[1],
+                    'relative_id' => $actorsKeys[0],
+                ],
+                1 => [
+                    'kinship_id' => $kinshipsKeys[0],
+                    'relative_id' => $actorsKeys[1],
+                ],
+            ],
+        ]);
+        $this->post('/actors', $data);
 
         // Removing the 2nd kinship
         $data = self::data([
@@ -176,9 +202,6 @@ class ActorKinshipFeatureTest extends TestCase
         ]);
         $response = $this->post('/actors', $data);
         $response->assertOk();
-        $this->assertCount(2, Actor::all());
-        $this->assertCount(1, ActorKinship::all());
-        $this->assertCount(2, Reference::all());
         $this->assertCount(1, Actor::find(2)->kinships);
         $this->assertCount(2, Actor::find(2)->kinships[0]->references);
         $this->assertEquals(1, Actor::find(2)->kinships[0]->references[0]->id);
