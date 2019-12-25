@@ -74,8 +74,6 @@ class ActorTest extends TestCase
 
     public function test_an_actor_can_have_dates()
     {
-        $this->withoutExceptionHandling();
-
         $response = $this->post('/actors', self::data([
             'date_start' => '1/1/1000',
             'date_end' => '1/1/1050',
@@ -106,7 +104,6 @@ class ActorTest extends TestCase
 
     public function test_actor_dates_accuracies_are_enum()
     {
-        // $this->withoutExceptionHandling();
         $accuracies = ['exactly', 'circa', 'before', 'after'];
 
         foreach (array_values($accuracies) as $i => $accuracy) {

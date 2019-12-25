@@ -28,8 +28,6 @@ class ActorKinshipFeatureTest extends TestCase
 
     public function test_kinships_can_be_added()
     {
-        $this->withoutExceptionHandling();
-
         $this->post('/kinships', KinshipTest::data());
         $this->post('/kinships', KinshipTest::data(['name' => 'Another name']));
 
@@ -44,12 +42,10 @@ class ActorKinshipFeatureTest extends TestCase
                 0 => [
                     'kinship_id' => $actorsKeys[1],
                     'relative_id' => $kinshipsKeys[0],
-                    'inversed' => false,
                 ],
                 1 => [
                     'kinship_id' => $actorsKeys[0],
                     'relative_id' => $kinshipsKeys[1],
-                    'inversed' => false,
                 ],
             ],
         ]);
@@ -64,8 +60,6 @@ class ActorKinshipFeatureTest extends TestCase
 
     public function test_kinships_can_be_updated_and_removed()
     {
-        $this->withoutExceptionHandling();
-
         $this->post('/kinships', KinshipTest::data());
         $this->post('/kinships', KinshipTest::data(['name' => 'Another name']));
 
@@ -87,11 +81,9 @@ class ActorKinshipFeatureTest extends TestCase
                 ],
             ],
         ]);
-
-        $response = $this->post('/actors', $data);
+        $this->post('/actors', $data);
 
         // Inverse the 2nd kinship
-
         $data = self::data([
             'kinships' => [
                 0 => [
@@ -104,22 +96,16 @@ class ActorKinshipFeatureTest extends TestCase
                 ],
             ],
         ]);
-
         $response = $this->patch('/actors/3', $data);
-
         $response->assertOk();
-
         $this->assertCount(2, Actor::find(3)->kinships);
         $this->assertEquals(1, Actor::find(3)->kinships[0]->relative(3)->id);
-
         $this->assertCount(1, Actor::find(1)->kinships);
         $this->assertEquals(3, Actor::find(1)->kinships[0]->relative(1)->id);
-
         $this->assertCount(1, Actor::find(2)->kinships);
         $this->assertEquals(3, Actor::find(2)->kinships[0]->relative(2)->id);
 
         // Removing the 2nd kinship
-
         $data = self::data([
             'kinships' => [
                 0 => [
@@ -128,25 +114,18 @@ class ActorKinshipFeatureTest extends TestCase
                 ],
             ],
         ]);
-
         $response = $this->patch('/actors/3', $data);
-
         $response->assertOk();
-
         $this->assertCount(1, Actor::find(3)->kinships);
         $this->assertEquals(1, Actor::find(3)->kinships[0]->relative(3)->id);
-
         $this->assertCount(1, Actor::find(1)->kinships);
         $this->assertEquals(3, Actor::find(1)->kinships[0]->relative(1)->id);
-
         $this->assertCount(0, Actor::find(2)->kinships);
 
         // Removing the 1st kinship
         $response = $this->patch('/actors/3', self::data());
-
         $response->assertOk();
         $this->assertCount(0, Actor::find(3)->kinships);
-
         $this->assertCount(0, Actor::find(1)->kinships);
     }
 
@@ -156,16 +135,10 @@ class ActorKinshipFeatureTest extends TestCase
 
         $this->post('/actors', self::data(['name' => 'Another name']));
 
-        $actorsKeys = Actor::all()->modelKeys();
-        $kinshipsKeys = Kinship::all()->modelKeys();
-
         $data = self::data([
             'kinships' => [ 0 => [ 'actor_id' => 1 ] ]
         ]);
-
-
         $response = $this->post('/actors', $data);
-
         $response->assertSessionHasErrors('kinships.0.kinship_id');
         $this->assertCount(0, ActorKinship::all());
     }
@@ -176,16 +149,10 @@ class ActorKinshipFeatureTest extends TestCase
 
         $this->post('/actors', self::data(['name' => 'Another name']));
 
-        $actorsKeys = Actor::all()->modelKeys();
-        $kinshipsKeys = Kinship::all()->modelKeys();
-
         $data = self::data([
             'kinships' => [ 0 => [ 'kinship_id' => 1 ] ]
         ]);
-
-
         $response = $this->post('/actors', $data);
-
         $response->assertSessionHasErrors('kinships.0.actor_id');
         $response->assertSessionHasErrors('kinships.0.relative_id');
         $this->assertCount(0, ActorKinship::all());
@@ -193,8 +160,6 @@ class ActorKinshipFeatureTest extends TestCase
 
     public function test_actor_kinship_references_can_be_added()
     {
-        $this->withoutExceptionHandling();
-
         $this->post('/kinships', KinshipTest::data());
         $this->post('/actors', self::data(['name' => 'Another name']));
 
@@ -210,14 +175,11 @@ class ActorKinshipFeatureTest extends TestCase
                 ],
             ],
         ]);
-
         $response = $this->post('/actors', $data);
-
         $response->assertOk();
         $this->assertCount(2, Actor::all());
         $this->assertCount(1, ActorKinship::all());
         $this->assertCount(2, Reference::all());
-
         $this->assertCount(1, Actor::find(2)->kinships);
         $this->assertCount(2, Actor::find(2)->kinships[0]->references);
         $this->assertEquals(1, Actor::find(2)->kinships[0]->references[0]->id);
