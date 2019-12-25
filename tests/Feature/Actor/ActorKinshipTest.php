@@ -207,4 +207,38 @@ class ActorKinshipFeatureTest extends TestCase
         $this->assertEquals(1, Actor::find(2)->kinships[0]->references[0]->id);
         $this->assertEquals(2, Actor::find(2)->kinships[0]->references[1]->id);
     }
+
+    public function test_actor_kinship_references_can_be_removed()
+    {
+        $this->withoutExceptionHandling();
+        $this->post('/kinships', KinshipTest::data());
+        $this->post('/actors', self::data(['name' => 'Another name']));
+
+        $this->post('/references', ReferenceTest::data());
+        $this->post('/references', ReferenceTest::data(['name' => 'Another name']));
+
+        $data = self::data([
+            'kinships' => [
+                0 => [
+                    'kinship_id' => 1,
+                    'relative_id' => 1,
+                    'references' => Reference::all()->modelKeys(),
+                ],
+            ],
+        ]);
+        $this->post('/actors', $data);
+
+        $data = self::data([
+            'kinships' => [
+                0 => [
+                    'kinship_id' => 1,
+                    'relative_id' => 1,
+                ],
+            ],
+        ]);
+        $response = $this->patch('/actors/2', $data);
+        $response->assertOk();
+        $this->assertCount(1, Actor::find(2)->kinships);
+        $this->assertCount(0, Actor::find(2)->kinships[0]->references);
+    }
 }
