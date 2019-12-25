@@ -121,12 +121,14 @@ class ActorKinshipFeatureTest extends TestCase
         $this->assertCount(1, Actor::find(1)->kinships);
         $this->assertEquals(3, Actor::find(1)->kinships[0]->relative(1)->id);
         $this->assertCount(0, Actor::find(2)->kinships);
+        $this->assertCount(1, ActorKinship::all());
 
         // Removing the 1st kinship
         $response = $this->patch('/actors/3', self::data());
         $response->assertOk();
         $this->assertCount(0, Actor::find(3)->kinships);
         $this->assertCount(0, Actor::find(1)->kinships);
+        $this->assertCount(0, ActorKinship::all());
     }
 
     public function test_kinships_kinship_is_required()
