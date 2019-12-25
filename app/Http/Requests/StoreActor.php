@@ -34,13 +34,9 @@ class StoreActor extends FormRequest
                 'exists:kinships,id',
                 'required',
             ],
-            'kinships.*.actor_id' => [
-                'exists:actors,id',
-                'required_without:kinships.*.relative_id',
-            ],
             'kinships.*.relative_id' => [
                 'exists:actors,id',
-                'required_without:kinships.*.actor_id',
+                'required',
             ],
         ],
         $this->getReferencesValidationRules('kinships.*'));

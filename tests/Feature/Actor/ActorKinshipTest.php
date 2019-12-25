@@ -49,9 +49,7 @@ class ActorKinshipFeatureTest extends TestCase
                 ],
             ],
         ]);
-
         $response = $this->post('/actors', $data);
-
         $response->assertOk();
         $this->assertCount(3, Actor::all());
         $this->assertCount(2, ActorKinship::all());
@@ -83,16 +81,16 @@ class ActorKinshipFeatureTest extends TestCase
         ]);
         $this->post('/actors', $data);
 
-        // Inverse the 2nd kinship
+        // Reset kinships
         $data = self::data([
             'kinships' => [
                 0 => [
-                    'kinship_id' => $kinshipsKeys[1],
+                    'kinship_id' => $kinshipsKeys[0],
                     'relative_id' => $actorsKeys[0],
                 ],
                 1 => [
-                    'kinship_id' => $kinshipsKeys[0],
-                    'actor_id' => $actorsKeys[1],
+                    'kinship_id' => $kinshipsKeys[1],
+                    'relative_id' => $actorsKeys[1],
                 ],
             ],
         ]);
@@ -138,14 +136,14 @@ class ActorKinshipFeatureTest extends TestCase
         $this->post('/actors', self::data(['name' => 'Another name']));
 
         $data = self::data([
-            'kinships' => [ 0 => [ 'actor_id' => 1 ] ]
+            'kinships' => [ 0 => [ 'relative_id' => 1 ] ]
         ]);
         $response = $this->post('/actors', $data);
         $response->assertSessionHasErrors('kinships.0.kinship_id');
         $this->assertCount(0, ActorKinship::all());
     }
 
-    public function test_kinships_either_actor_or_relative_is_required()
+    public function test_kinships_relative_is_required()
     {
         $this->post('/kinships', KinshipTest::data());
 
@@ -155,7 +153,6 @@ class ActorKinshipFeatureTest extends TestCase
             'kinships' => [ 0 => [ 'kinship_id' => 1 ] ]
         ]);
         $response = $this->post('/actors', $data);
-        $response->assertSessionHasErrors('kinships.0.actor_id');
         $response->assertSessionHasErrors('kinships.0.relative_id');
         $this->assertCount(0, ActorKinship::all());
     }

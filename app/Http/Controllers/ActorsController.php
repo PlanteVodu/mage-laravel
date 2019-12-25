@@ -43,24 +43,38 @@ class ActorsController extends Controller
         // Update or create the Actor's Kinships
         $updatedActorKinships = [];
         foreach(array_values($kinships) as $i => $kinship) {
-            $prefix = 'kinships.' . $i;
+            $kinship['actor_id'] = $actor->getKey();
 
-            // Set the Kinship in the right order / way / direction
-            if (array_key_exists('actor_id', $kinship)) {
-                $kinship['relative_id'] = $actor->getKey();
-            } else if (array_key_exists('relative_id', $kinship)) {
-                $kinship['actor_id'] = $actor->getKey();
+            $actorKinship = ActorKinship::
+                where(function($query) use ($actor, $kinship) {
+                    $query
+                        ->where('relative_id', $kinship['relative_id'])
+                        ->where('actor_id', $kinship['actor_id']);
+                })
+                ->orWhere(function($query) use ($actor, $kinship) {
+                    $query
+                        ->where('actor_id', $kinship['relative_id'])
+                        ->where('relative_id', $kinship['actor_id']);
+                })
+                ->first();
+
+            if ($actorKinship && $actorKinship->kinship_id != $kinship['kinship_id']) {
+                $actorKinship->kinship_id = $kinship['kinship_id'];
+                $actorKinship->save();
+            } else {
+                $actorKinship = new ActorKinship;
+
+                $actorKinship->kinship_id = $kinship['kinship_id'];
+                $actorKinship->actor_id = $kinship['actor_id'];
+                $actorKinship->relative_id = $kinship['relative_id'];
+
+                $actorKinship->save();
             }
 
-            $updatedKinship = ActorKinship::updateOrCreate(
-                ['actor_id' => $kinship['actor_id'],
-                 'relative_id' => $kinship['relative_id']],
-                ['kinship_id' => $kinship['kinship_id']]
-            );
+            $prefix = 'kinships.' . $i;
+            $actorKinship->setReferences($request, $prefix);
 
-            $updatedKinship->setReferences($request, $prefix);
-
-            $updatedActorKinships[]= $updatedKinship->getKey();
+            $updatedActorKinships[]= $actorKinship->getKey();
         }
 
         // Remove the old Actor's Kinships
