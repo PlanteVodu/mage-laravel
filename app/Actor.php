@@ -3,11 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Dates;
+use App\Traits\SetDates;
+use App\Traits\SetReferences;
 
 class Actor extends Model
 {
-    use Dates;
+    use SetDates, SetReferences;
 
     protected $guarded = [];
 

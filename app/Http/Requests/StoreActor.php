@@ -4,10 +4,11 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Requests\Dates;
+use App\Http\Requests\References;
 
 class StoreActor extends FormRequest
 {
-    use Dates;
+    use Dates, References;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -29,6 +30,19 @@ class StoreActor extends FormRequest
         return array_merge($this->getDatesValidationRules(), [
             'name' => 'required',
             'note' => '',
-        ]);
+            'kinships.*.kinship_id' => [
+                'exists:kinships,id',
+                'required',
+            ],
+            'kinships.*.actor_id' => [
+                'exists:actors,id',
+                'required_without:kinships.*.relative_id',
+            ],
+            'kinships.*.relative_id' => [
+                'exists:actors,id',
+                'required_without:kinships.*.actor_id',
+            ],
+        ],
+        $this->getReferencesValidationRules('kinships.*'));
     }
 }

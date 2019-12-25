@@ -14,18 +14,15 @@ class ActorsController extends Controller
     public function store(StoreActor $request)
     {
         $actor = new Actor;
-
-        $actor->name = $request->name;
-        $actor->note = $request->note;
-        $actor->setDates($request);
-
-        $actor->save();
-
-        Reference::setReferences($request, $actor);
-        $this->setKinships($request, $actor);
+        $this->setActorData($actor, $request);
     }
 
     public function update(StoreActor $request, Actor $actor)
+    {
+        $this->setActorData($actor, $request);
+    }
+
+    protected function setActorData(Actor $actor, StoreActor $request)
     {
         $actor->name = $request->name;
         $actor->note = $request->note;
@@ -33,35 +30,21 @@ class ActorsController extends Controller
 
         $actor->save();
 
-        Reference::setReferences($request, $actor);
-        $this->setKinships($request, $actor);
+        $actor->setReferences($request);
+        $this->setKinships($actor, $request);
     }
 
-    protected function setKinships(Request $request, Actor $actor) {
-        $data = $request->validate([
-            'kinships.*.kinship_id' => [
-                'exists:kinships,id',
-                'required',
-            ],
-            'kinships.*.actor_id' => [
-                'exists:actors,id',
-                'required_without:kinships.*.relative_id',
-            ],
-            'kinships.*.relative_id' => [
-                'exists:actors,id',
-                'required_without:kinships.*.actor_id',
-            ],
-        ]);
+    protected function setKinships(Actor $actor, StoreActor $request) {
+        $kinships = $request->input('kinships', []);
 
+        // Retrieve previous Actor's Kinships
         $existingKinships = $actor->kinships;
 
-        $kinships = [];
-        if (array_key_exists('kinships', $data)) {
-            $kinships = $data['kinships'];
-        }
-
+        // Update or create the Actor's Kinships
         $updatedActorKinships = [];
         foreach(array_values($kinships) as $i => $kinship) {
+            $prefix = 'kinships.' . $i;
+
             // Set the Kinship in the right order / way / direction
             if (array_key_exists('actor_id', $kinship)) {
                 $kinship['relative_id'] = $actor->getKey();
@@ -75,22 +58,13 @@ class ActorsController extends Controller
                 ['kinship_id' => $kinship['kinship_id']]
             );
 
-            Reference::setReferences($request, $updatedKinship, 'kinships.' . $i . '.');
+            $updatedKinship->setReferences($request, $prefix);
 
             $updatedActorKinships[]= $updatedKinship->getKey();
         }
 
+        // Remove the old Actor's Kinships
         $modelsToRemove = array_diff($existingKinships->modelKeys(), $updatedActorKinships);
         ActorKinship::destroy($modelsToRemove);
-    }
-
-    protected function validateRequest(Request $request)
-    {
-        $rules = [
-            'name' => 'required',
-            'note' => '',
-        ];
-        $rules = array_merge(Dates::getValidationRules(), $rules);
-        return $request->validate($rules);
     }
 }

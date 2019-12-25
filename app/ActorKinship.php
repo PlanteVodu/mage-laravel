@@ -4,10 +4,13 @@ namespace App;
 
 use App\Actor;
 use App\Kinship;
+use App\Traits\SetReferences;
 use Illuminate\Database\Eloquent\Model;
 
 class ActorKinship extends Model
 {
+    use SetReferences;
+
     protected $guarded = [];
 
     public $actor;
