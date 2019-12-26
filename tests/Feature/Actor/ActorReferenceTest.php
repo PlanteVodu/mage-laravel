@@ -4,10 +4,7 @@ namespace Tests\Feature;
 
 use App\Actor;
 use App\Reference;
-use App\Kinship;
-use App\ActorKinship;
 use Tests\Feature\ReferenceTest;
-use Tests\Feature\KinshipTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
