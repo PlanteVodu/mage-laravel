@@ -32,10 +32,19 @@ class ActorReferenceTest extends TestCase
 
         $data = self::data(['references' => Reference::all()->modelKeys()]);
         $response = $this->post('/actors', $data);
-
         $response->assertOk();
         $this->assertCount(1, Actor::all());
+        $this->assertCount(2, Actor::first()->references);
         $this->assertEquals(Reference::first()->id, Actor::first()->references[0]->id);
+
+        $this->post('/actors', self::data(['references' => Reference::first()->getKey()]));
+        $response->assertOk();
+        $this->assertCount(2, Actor::all());
+        $this->assertCount(2, Actor::find(1)->references);
+        $this->assertCount(1, Actor::find(2)->references);
+        $this->assertEquals(1, Actor::first()->references[0]->id);
+        $this->assertEquals(2, Actor::first()->references[1]->id);
+        $this->assertEquals(1, Actor::find(2)->references[0]->id);
     }
 
     public function test_references_can_be_removed()
@@ -43,21 +52,19 @@ class ActorReferenceTest extends TestCase
         $this->post('/references', ReferenceTest::data());
         $this->post('/references', ReferenceTest::data(['name' => 'Another name']));
 
-        $response = $this->post('/actors',
-                                self::data(['references' => Reference::all()->modelKeys()]));
+        $this->post('/actors', self::data(['references' => Reference::all()->modelKeys()]));
+        $this->post('/actors', self::data(['references' => 2]));
 
         $actor = Actor::first();
 
-        $response = $this->patch('/actors/' . $actor->id,
-                                 self::data(['references' => [Reference::first()->id]]));
-
+        $response = $this->patch('/actors/1', self::data(['references' => [Reference::first()->getKey()]]));
         $response->assertOk();
-        $this->assertCount(1, Actor::first()->references);
+        $this->assertCount(1, Actor::find(1)->references);
+        $this->assertCount(1, Actor::find(2)->references);
 
-        $response = $this->patch('/actors/' . $actor->id,
-                                 self::data(['references' => []]));
-
+        $response = $this->patch('/actors/1', self::data(['references' => []]));
         $response->assertOk();
-        $this->assertCount(0, Actor::first()->references);
+        $this->assertCount(0, Actor::find(1)->references);
+        $this->assertCount(1, Actor::find(2)->references);
     }
 }
