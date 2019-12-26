@@ -27,7 +27,7 @@ class StoreActor extends FormRequest
      */
     public function rules()
     {
-        return array_merge($this->getDatesValidationRules(), [
+        $rules = [
             'name' => 'required',
             'note' => '',
             'kinships.*.kinship_id' => [
@@ -38,7 +38,15 @@ class StoreActor extends FormRequest
                 'exists:actors,id',
                 'required',
             ],
-        ],
-        $this->getReferencesValidationRules('kinships.*'));
+        ];
+
+        $rules = array_merge(
+            $rules,
+            $this->getDatesValidationRules(),
+            $this->getReferencesValidationRules(''),
+            $this->getReferencesValidationRules('kinships.*')
+        );
+
+        return $rules;
     }
 }
