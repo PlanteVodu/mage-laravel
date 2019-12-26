@@ -15,6 +15,18 @@ class ActorKinship extends Model
 
     public $actor;
 
+    // Observe this model being deleted and delete its children
+    // https://laracasts.com/discuss/channels/eloquent/laravel-delete-model-with-all-relations
+    // https://laracasts.com/discuss/channels/laravel/remove-pivot-table-entries-when-deleting-records?page=1
+    public static function boot ()
+    {
+        parent::boot();
+
+        self::deleting(function (ActorKinship $actorKinship) {
+            $actorKinship->references()->detach();
+        });
+    }
+
     public function kinship()
     {
         return Kinship::find($this->kinship_id);

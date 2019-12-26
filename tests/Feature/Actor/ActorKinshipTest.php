@@ -10,6 +10,7 @@ use Tests\Feature\ReferenceTest;
 use Tests\Feature\KinshipTest;
 use Tests\Feature\Actor\ActorTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class ActorKinshipFeatureTest extends TestCase
@@ -240,5 +241,52 @@ class ActorKinshipFeatureTest extends TestCase
         $response->assertOk();
         $this->assertCount(1, Actor::find(2)->kinships);
         $this->assertCount(0, Actor::find(2)->kinships[0]->references);
+    }
+
+    public function test_references_are_removed_when_actor_kinship_is_removed()
+    {
+        $this->withoutExceptionHandling();
+        $this->post('/kinships', KinshipTest::data());
+        $this->post('/kinships', KinshipTest::data());
+
+        $this->post('/actors', self::data());
+        $this->post('/actors', self::data());
+
+        $this->post('/references', ReferenceTest::data());
+        $this->post('/references', ReferenceTest::data());
+
+        $data = self::data([
+            'kinships' => [
+                0 => [
+                    'kinship_id' => 1,
+                    'relative_id' => 2,
+                    'references' => Reference::all()->modelKeys(),
+                ],
+                1 => [
+                    'kinship_id' => 2,
+                    'relative_id' => 1,
+                    'references' => 2,
+                ],
+            ],
+        ]);
+
+        $response = $this->post('/actors', $data);
+        $response->assertOk();
+        $this->assertCount(2, Actor::find(3)->kinships);
+        $this->assertCount(2, Actor::find(3)->kinships[0]->references);
+        $this->assertCount(1, Actor::find(3)->kinships[1]->references);
+
+        $response = $this->patch('/actors/3', self::data([
+            'kinships' => [
+                0 => [
+                    'kinship_id' => 2,
+                    'relative_id' => 1,
+                    'references' => 2,
+                ]
+            ],
+        ]));
+        $this->assertCount(1, Actor::find(3)->kinships);
+        $this->assertCount(1, Actor::find(3)->kinships[0]->references);
+        $this->assertCount(1, DB::table('referencables')->get());
     }
 }

@@ -46,22 +46,31 @@ class ActorsController extends Controller
             $kinship['actor_id'] = $actor->getKey();
 
             $actorKinship = ActorKinship::
-                where(function($query) use ($actor, $kinship) {
+                where(function($query) use ($kinship) {
                     $query
                         ->where('relative_id', $kinship['relative_id'])
                         ->where('actor_id', $kinship['actor_id']);
                 })
-                ->orWhere(function($query) use ($actor, $kinship) {
+                ->orWhere(function($query) use ($kinship) {
                     $query
                         ->where('actor_id', $kinship['relative_id'])
                         ->where('relative_id', $kinship['actor_id']);
                 })
                 ->first();
 
-            if ($actorKinship && $actorKinship->kinship_id != $kinship['kinship_id']) {
-                $actorKinship->kinship_id = $kinship['kinship_id'];
-                $actorKinship->save();
+            // dump($actorKinship);
+            // if ($actorKinship) {
+            //     dump($actorKinship->references);
+            // }
+
+            if ($actorKinship) {
+                // dump("ActorKinship exists");
+                if ($actorKinship->kinship_id != $kinship['kinship_id']) {
+                    $actorKinship->kinship_id = $kinship['kinship_id'];
+                    $actorKinship->save();
+                }
             } else {
+                // dump("New ActorKinship");
                 $actorKinship = new ActorKinship;
 
                 $actorKinship->kinship_id = $kinship['kinship_id'];
