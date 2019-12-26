@@ -67,4 +67,14 @@ class ActorReferenceTest extends TestCase
         $this->assertCount(0, Actor::find(1)->references);
         $this->assertCount(1, Actor::find(2)->references);
     }
+
+    public function test_references_must_be_distinct()
+    {
+        $this->post('/references', ReferenceTest::data());
+
+        $data = self::data(['references' => [1, 1]]);
+        $response = $this->post('/actors', $data);
+        $response->assertSessionHasErrors('references.0', 'references.1');
+        $this->assertCount(0, Actor::all());
+    }
 }

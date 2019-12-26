@@ -13,7 +13,10 @@ trait References
         $field = $prefix . 'references.*';
 
         return [
-            $field => 'exists:references,id',
+            $field => [
+                'distinct',
+                'exists:references,id',
+            ],
         ];
     }
 }
