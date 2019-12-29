@@ -23,7 +23,8 @@ class ReferenceTest extends TestCase
 
     public function test_a_reference_can_be_added()
     {
-        $response = $this->post('/references', self::data());
+        $reference = factory(Reference::class)->make();
+        $response = $this->post('/references', $reference->toArray());
 
         $response->assertOk();
         $this->assertCount(1, Reference::all());
@@ -31,7 +32,8 @@ class ReferenceTest extends TestCase
 
     public function test_a_category_is_required()
     {
-        $response = $this->post('/references', self::data(['category' => '']));
+        $reference = factory(Reference::class)->make(['category' => '']);
+        $response = $this->post('/references', $reference->toArray());
 
         $response->assertSessionHasErrors('category');
     }
@@ -41,34 +43,27 @@ class ReferenceTest extends TestCase
         $allowedCategories = ['source', 'bibliography'];
 
         foreach ($allowedCategories as $category) {
-            $response = $this->post('/references', self::data(['category' => $category]));
-
+            $reference = factory(Reference::class)->make(['category' => $category]);
+            $response = $this->post('/references', $reference->toArray());
             $response->assertOk();
         }
 
-        $response = $this->post('/references', self::data(['category' => 'other']));
-
+        $reference = factory(Reference::class)->make(['category' => 'not a category']);
+        $response = $this->post('/references', $reference->toArray());
         $response->assertSessionHasErrors('category');
     }
 
     public function test_a_name_is_required()
     {
-        $response = $this->post('/references', self::data(['name' => '']));
+        $reference = factory(Reference::class)->make(['name' => '']);
+        $response = $this->post('/references', $reference->toArray());
 
         $response->assertSessionHasErrors('name');
     }
 
-    public function test_note_is_optionnal()
-    {
-        $response = $this->post('/references', self::data(['note' => '']));
-
-        $response->assertOk();
-    }
-
     public function test_a_reference_can_be_updated()
     {
-        $response = $this->post('/references', self::data());
-
+        factory(Reference::class)->create();
         $reference = Reference::first();
 
         $response = $this->patch('/references/' . $reference->id, [
@@ -77,6 +72,7 @@ class ReferenceTest extends TestCase
             'note' => 'New notes',
         ]);
 
+        $response->assertOk();
         $this->assertEquals('bibliography', Reference::first()->category);
         $this->assertEquals('New name', Reference::first()->name);
         $this->assertEquals('New notes', Reference::first()->note);
