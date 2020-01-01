@@ -17,44 +17,47 @@ class ActorKinshipFeatureTest extends TestCase
 {
     use RefreshDatabase;
 
-    public static function data($array = [])
+    protected function setUp() : void
     {
-        $data = [
-            'name' => 'Cool name',
-            'note' => 'Some notes',
-        ];
+        parent::setUp();
 
-        return array_merge($data, $array);
+        factory(Kinship::class, 3)->create();
+        factory(Reference::class, 3)->create();
+        factory(Actor::class, 5)->create();
+
+        $this->actorsKeys = Actor::all()->modelKeys();
+        $this->kinshipsKeys = Kinship::all()->modelKeys();
+    }
+
+    protected function getKinshipArray($kinshipId, $relativeId, $references = [])
+    {
+        // dd($references);
+        return [
+            'kinship_id' => $this->kinshipsKeys[$kinshipId],
+            'relative_id' => $this->kinshipsKeys[$relativeId],
+            'references' => $references,
+        ];
+    }
+
+    protected function getActor(...$kinships)
+    {
+        $actorKinships = [];
+        foreach ($kinships as $kinship) {
+            $actorKinships[]= $this->getKinshipArray(...$kinship);
+        }
+
+        return factory(Actor::class)
+            ->make(['kinships' => $actorKinships])
+            ->toArray();
     }
 
     public function test_kinships_can_be_added()
     {
-        $this->post('/kinships', KinshipTest::data());
-        $this->post('/kinships', KinshipTest::data(['name' => 'Another name']));
+        $actor = $this->getActor([0,1,[1,2]], [1,0,[3]]);
+        $response = $this->post('/actors', $actor);
 
-        $this->post('/actors', self::data(['name' => 'Another name']));
-        $this->post('/actors', self::data(['name' => 'Yet another name']));
-
-        $actorsKeys = Actor::all()->modelKeys();
-        $kinshipsKeys = Kinship::all()->modelKeys();
-
-        $data = self::data([
-            'kinships' => [
-                0 => [
-                    'kinship_id' => $actorsKeys[1],
-                    'relative_id' => $kinshipsKeys[0],
-                ],
-                1 => [
-                    'kinship_id' => $actorsKeys[0],
-                    'relative_id' => $kinshipsKeys[1],
-                ],
-            ],
-        ]);
-        $response = $this->post('/actors', $data);
-        $response->assertOk();
-        $this->assertCount(3, Actor::all());
-        $this->assertCount(2, ActorKinship::all());
-        $this->assertCount(2, Actor::find(3)->kinships);
+        $response->assertCreated();
+        $this->assertCount(2, Actor::find(6)->kinships);
     }
 
     public function test_kinships_can_be_updated()
@@ -70,14 +73,8 @@ class ActorKinshipFeatureTest extends TestCase
 
         $data = self::data([
             'kinships' => [
-                0 => [
-                    'kinship_id' => $kinshipsKeys[1],
-                    'relative_id' => $actorsKeys[0],
-                ],
-                1 => [
-                    'kinship_id' => $kinshipsKeys[0],
-                    'relative_id' => $actorsKeys[1],
-                ],
+                getKinshipArrat($kinshipsKeys[0], $actorsKeys[1]),
+                getKinshipArrat($kinshipsKeys[1], $actorsKeys[0]),
             ],
         ]);
         $this->post('/actors', $data);
@@ -85,14 +82,8 @@ class ActorKinshipFeatureTest extends TestCase
         // Reset kinships
         $data = self::data([
             'kinships' => [
-                0 => [
-                    'kinship_id' => $kinshipsKeys[0],
-                    'relative_id' => $actorsKeys[0],
-                ],
-                1 => [
-                    'kinship_id' => $kinshipsKeys[1],
-                    'relative_id' => $actorsKeys[1],
-                ],
+                getKinshipArrat($kinshipsKeys[0], $actorsKeys[0]),
+                getKinshipArrat($kinshipsKeys[1], $actorsKeys[1]),
             ],
         ]);
         $response = $this->patch('/actors/3', $data);
@@ -118,14 +109,8 @@ class ActorKinshipFeatureTest extends TestCase
 
         $data = self::data([
             'kinships' => [
-                0 => [
-                    'kinship_id' => $kinshipsKeys[1],
-                    'relative_id' => $actorsKeys[0],
-                ],
-                1 => [
-                    'kinship_id' => $kinshipsKeys[0],
-                    'relative_id' => $actorsKeys[1],
-                ],
+                getKinshipArrat($kinshipsKeys[0], $actorsKeys[1]),
+                getKinshipArrat($kinshipsKeys[1], $actorsKeys[0]),
             ],
         ]);
         $this->post('/actors', $data);
@@ -133,10 +118,7 @@ class ActorKinshipFeatureTest extends TestCase
         // Removing the 2nd kinship
         $data = self::data([
             'kinships' => [
-                0 => [
-                    'kinship_id' => $kinshipsKeys[1],
-                    'relative_id' => $actorsKeys[0],
-                ],
+                getKinshipArrat($kinshipsKeys[0], $actorsKeys[1]),
             ],
         ]);
         $response = $this->patch('/actors/3', $data);
