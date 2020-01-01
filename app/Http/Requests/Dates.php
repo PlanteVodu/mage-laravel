@@ -3,7 +3,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Validation\Rule;
 
-trait Dates
+abstract class Dates
 {
     public static $possibleAccuracies = [
         'exactly',
@@ -12,13 +12,13 @@ trait Dates
         'after',
     ];
 
-    public function getDatesValidationRules($prefix = '')
+    public static function rules($prefix = '')
     {
         if (strlen($prefix) > 0) {
             $prefix = $prefix . '.';
         }
 
-        $accuracies = Rule::in(self::$possibleAccuracies);
+        $isValidAccuracy = Rule::in(self::$possibleAccuracies);
 
         return [
             $prefix . 'date_start' => [
@@ -29,8 +29,8 @@ trait Dates
                 'date',
                 'required_with:date_end_accuracy',
             ],
-            $prefix . 'date_start_accuracy' => [$accuracies],
-            $prefix . 'date_end_accuracy' => [$accuracies],
+            $prefix . 'date_start_accuracy' => [$isValidAccuracy],
+            $prefix . 'date_end_accuracy' => [$isValidAccuracy],
         ];
     }
 }

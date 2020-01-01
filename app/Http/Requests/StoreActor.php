@@ -8,8 +8,6 @@ use App\Http\Requests\References;
 
 class StoreActor extends FormRequest
 {
-    use Dates, References;
-
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -42,9 +40,9 @@ class StoreActor extends FormRequest
 
         $rules = array_merge(
             $rules,
-            $this->getDatesValidationRules(),
-            $this->getReferencesValidationRules(''),
-            $this->getReferencesValidationRules('kinships.*')
+            Dates::rules(''),
+            References::rules(''),
+            References::rules('kinships.*')
         );
 
         return $rules;

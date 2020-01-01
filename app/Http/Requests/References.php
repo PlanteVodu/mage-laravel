@@ -1,11 +1,9 @@
 <?php
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
-
-trait References
+abstract class References
 {
-    public function getReferencesValidationRules($prefix = '')
+    public static function rules($prefix = '')
     {
         if (strlen($prefix) > 0) {
             $prefix = $prefix . '.';
