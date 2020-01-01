@@ -6,9 +6,7 @@ use App\Actor;
 use App\Reference;
 use App\Kinship;
 use App\ActorKinship;
-use Tests\Feature\ReferenceTest;
-use Tests\Feature\KinshipTest;
-use Tests\Feature\Actor\ActorTest;
+use Tests\Feature\ActorTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -21,22 +19,12 @@ class ActorKinshipFeatureTest extends TestCase
     {
         parent::setUp();
 
-        factory(Kinship::class, 3)->create();
-        factory(Reference::class, 3)->create();
-        factory(Actor::class, 5)->create();
+        factory(Kinship::class, 2)->create();
+        factory(Reference::class, 2)->create();
+        factory(Actor::class, 2)->create();
 
         $this->actorsKeys = Actor::all()->modelKeys();
         $this->kinshipsKeys = Kinship::all()->modelKeys();
-    }
-
-    protected function getKinshipArray($kinshipId, $relativeId, $references = [])
-    {
-        // dd($references);
-        return [
-            'kinship_id' => $this->kinshipsKeys[$kinshipId],
-            'relative_id' => $this->kinshipsKeys[$relativeId],
-            'references' => $references,
-        ];
     }
 
     protected function getActor(...$kinships)
@@ -51,100 +39,75 @@ class ActorKinshipFeatureTest extends TestCase
             ->toArray();
     }
 
+    protected function getKinshipArray($kinshipId, $relativeId, $references = [])
+    {
+        return [
+            'kinship_id' => $this->kinshipsKeys[$kinshipId],
+            'relative_id' => $this->kinshipsKeys[$relativeId],
+            'references' => $references,
+        ];
+    }
+
     public function test_kinships_can_be_added()
     {
-        $actor = $this->getActor([0,1,[1,2]], [1,0,[3]]);
+        $actor = $this->getActor([0, 1], [1, 0]);
         $response = $this->post('/actors', $actor);
 
-        $response->assertCreated();
-        $this->assertCount(2, Actor::find(6)->kinships);
+        $response->assertOk();
+        $this->assertCount(2, Actor::find(3)->kinships);
+        $this->assertEquals(2, Actor::find(3)->kinships[0]->relative(3)->id);
+        $this->assertEquals(1, Actor::find(3)->kinships[1]->relative(3)->id);
+        $this->assertEquals(1, Actor::find(3)->kinships[0]->kinship()->id);
+        $this->assertEquals(2, Actor::find(3)->kinships[1]->kinship()->id);
     }
 
     public function test_kinships_can_be_updated()
     {
-        $this->post('/kinships', KinshipTest::data());
-        $this->post('/kinships', KinshipTest::data(['name' => 'Another name']));
+        $actor = $this->getActor([0, 1], [1, 0]);
+        $this->post('/actors', $actor);
 
-        $this->post('/actors', self::data(['name' => 'Another name']));
-        $this->post('/actors', self::data(['name' => 'Yet another name']));
+        $actor = $this->getActor([1, 1], [0, 0]);
+        $response = $this->patch('/actors/3', $actor);
 
-        $actorsKeys = Actor::all()->modelKeys();
-        $kinshipsKeys = Kinship::all()->modelKeys();
-
-        $data = self::data([
-            'kinships' => [
-                getKinshipArrat($kinshipsKeys[0], $actorsKeys[1]),
-                getKinshipArrat($kinshipsKeys[1], $actorsKeys[0]),
-            ],
-        ]);
-        $this->post('/actors', $data);
-
-        // Reset kinships
-        $data = self::data([
-            'kinships' => [
-                getKinshipArrat($kinshipsKeys[0], $actorsKeys[0]),
-                getKinshipArrat($kinshipsKeys[1], $actorsKeys[1]),
-            ],
-        ]);
-        $response = $this->patch('/actors/3', $data);
         $response->assertOk();
-        $this->assertCount(2, Actor::find(3)->kinships);
-        $this->assertEquals(1, Actor::find(3)->kinships[0]->relative(3)->id);
-        $this->assertCount(1, Actor::find(1)->kinships);
-        $this->assertEquals(3, Actor::find(1)->kinships[0]->relative(1)->id);
-        $this->assertCount(1, Actor::find(2)->kinships);
-        $this->assertEquals(3, Actor::find(2)->kinships[0]->relative(2)->id);
+        $kinships = Actor::find(3)->kinships()->get()->sortBy('kinship_id');
+        $this->assertEquals(2, $kinships->count());
+        $this->assertEquals(1, $kinships->values()->get(0)->kinship()->id);
+        $this->assertEquals(1, $kinships->values()->get(0)->relative(3)->id);
+        $this->assertEquals(2, $kinships->values()->get(1)->kinship()->id);
+        $this->assertEquals(2, $kinships->values()->get(1)->relative(3)->id);
     }
 
     public function test_kinships_can_be_removed()
     {
-        $this->post('/kinships', KinshipTest::data());
-        $this->post('/kinships', KinshipTest::data(['name' => 'Another name']));
+        $actor = $this->getActor([0, 1], [1, 0]);
+        $this->post('/actors', $actor);
 
-        $this->post('/actors', self::data(['name' => 'Another name']));
-        $this->post('/actors', self::data(['name' => 'Yet another name']));
+        $actor = $this->getActor([1, 0]);
+        $response = $this->patch('/actors/3', $actor);
 
-        $actorsKeys = Actor::all()->modelKeys();
-        $kinshipsKeys = Kinship::all()->modelKeys();
-
-        $data = self::data([
-            'kinships' => [
-                getKinshipArrat($kinshipsKeys[0], $actorsKeys[1]),
-                getKinshipArrat($kinshipsKeys[1], $actorsKeys[0]),
-            ],
-        ]);
-        $this->post('/actors', $data);
-
-        // Removing the 2nd kinship
-        $data = self::data([
-            'kinships' => [
-                getKinshipArrat($kinshipsKeys[0], $actorsKeys[1]),
-            ],
-        ]);
-        $response = $this->patch('/actors/3', $data);
         $response->assertOk();
-        $this->assertCount(1, Actor::find(3)->kinships);
+        $kinships = Actor::find(3)->kinships()->get()->sortBy('kinship_id');
+        $this->assertEquals(1, Actor::find(3)->kinships->count());
+        $this->assertEquals(2, Actor::find(3)->kinships[0]->kinship()->id);
         $this->assertEquals(1, Actor::find(3)->kinships[0]->relative(3)->id);
-        $this->assertCount(1, Actor::find(1)->kinships);
-        $this->assertEquals(3, Actor::find(1)->kinships[0]->relative(1)->id);
-        $this->assertCount(0, Actor::find(2)->kinships);
-        $this->assertCount(1, ActorKinship::all());
 
-        // Removing the 1st kinship
-        $response = $this->patch('/actors/3', self::data());
+        $this->assertCount(1, Actor::find(1)->kinships);
+        $this->assertEquals(2, Actor::find(1)->kinships[0]->kinship()->id);
+
+        $this->assertCount(0, Actor::find(2)->kinships);
+
+        $actor = $this->getActor();
+        $response = $this->patch('/actors/3', $actor);
+
         $response->assertOk();
         $this->assertCount(0, Actor::find(3)->kinships);
-        $this->assertCount(0, Actor::find(1)->kinships);
-        $this->assertCount(0, ActorKinship::all());
+        $this->assertCount(0, Actor::find(2)->kinships);
     }
 
     public function test_kinships_kinship_is_required()
     {
-        $this->post('/kinships', KinshipTest::data());
-
-        $this->post('/actors', self::data(['name' => 'Another name']));
-
-        $data = self::data([
+        $data = ActorTest::data([
             'kinships' => [ 0 => [ 'relative_id' => 1 ] ]
         ]);
         $response = $this->post('/actors', $data);
@@ -154,11 +117,7 @@ class ActorKinshipFeatureTest extends TestCase
 
     public function test_kinships_relative_is_required()
     {
-        $this->post('/kinships', KinshipTest::data());
-
-        $this->post('/actors', self::data(['name' => 'Another name']));
-
-        $data = self::data([
+        $data = ActorTest::data([
             'kinships' => [ 0 => [ 'kinship_id' => 1 ] ]
         ]);
         $response = $this->post('/actors', $data);
@@ -168,105 +127,43 @@ class ActorKinshipFeatureTest extends TestCase
 
     public function test_actor_kinship_references_can_be_added()
     {
-        $this->post('/kinships', KinshipTest::data());
-        $this->post('/actors', self::data(['name' => 'Another name']));
-
-        $this->post('/references', ReferenceTest::data());
-        $this->post('/references', ReferenceTest::data(['name' => 'Another name']));
-
-        $data = self::data([
-            'kinships' => [
-                0 => [
-                    'kinship_id' => 1,
-                    'relative_id' => 1,
-                    'references' => Reference::all()->modelKeys(),
-                ],
-            ],
-        ]);
-        $response = $this->post('/actors', $data);
+        $actor = $this->getActor([1 , 0, [1, 2]], [0, 1, [2]]);
+        $response = $this->post('/actors', $actor);
         $response->assertOk();
-        $this->assertCount(1, Actor::find(2)->kinships);
-        $this->assertCount(2, Actor::find(2)->kinships[0]->references);
-        $this->assertEquals(1, Actor::find(2)->kinships[0]->references[0]->id);
-        $this->assertEquals(2, Actor::find(2)->kinships[0]->references[1]->id);
+        $this->assertCount(2, Actor::find(3)->kinships);
+        $this->assertCount(2, Actor::find(3)->kinships[0]->references);
+        $this->assertCount(1, Actor::find(3)->kinships[1]->references);
+        $this->assertEquals(1, Actor::find(3)->kinships[0]->references[0]->id);
+        $this->assertEquals(2, Actor::find(3)->kinships[0]->references[1]->id);
+        $this->assertEquals(2, Actor::find(3)->kinships[1]->references[0]->id);
     }
 
     public function test_actor_kinship_references_can_be_removed()
     {
-        $this->withoutExceptionHandling();
-        $this->post('/kinships', KinshipTest::data());
-        $this->post('/actors', self::data(['name' => 'Another name']));
+        $actor = $this->getActor([1, 0, [1, 2]]);
+        $response = $this->post('/actors', $actor);
 
-        $this->post('/references', ReferenceTest::data());
-        $this->post('/references', ReferenceTest::data(['name' => 'Another name']));
-
-        $data = self::data([
-            'kinships' => [
-                0 => [
-                    'kinship_id' => 1,
-                    'relative_id' => 1,
-                    'references' => Reference::all()->modelKeys(),
-                ],
-            ],
-        ]);
-        $this->post('/actors', $data);
-
-        $data = self::data([
-            'kinships' => [
-                0 => [
-                    'kinship_id' => 1,
-                    'relative_id' => 1,
-                ],
-            ],
-        ]);
-        $response = $this->patch('/actors/2', $data);
+        $actor = $this->getActor([1, 0]);
+        $response = $this->patch('/actors/3', $actor);
         $response->assertOk();
-        $this->assertCount(1, Actor::find(2)->kinships);
-        $this->assertCount(0, Actor::find(2)->kinships[0]->references);
+        $this->assertCount(0, Actor::find(3)->kinships[0]->references);
     }
 
     public function test_references_are_removed_when_actor_kinship_is_removed()
     {
-        $this->withoutExceptionHandling();
-        $this->post('/kinships', KinshipTest::data());
-        $this->post('/kinships', KinshipTest::data());
+        $actor = $this->getActor([1, 0, [1, 2]], [0, 1, [2]]);
+        $response = $this->post('/actors', $actor);
 
-        $this->post('/actors', self::data());
-        $this->post('/actors', self::data());
-
-        $this->post('/references', ReferenceTest::data());
-        $this->post('/references', ReferenceTest::data());
-
-        $data = self::data([
-            'kinships' => [
-                0 => [
-                    'kinship_id' => 1,
-                    'relative_id' => 2,
-                    'references' => Reference::all()->modelKeys(),
-                ],
-                1 => [
-                    'kinship_id' => 2,
-                    'relative_id' => 1,
-                    'references' => 2,
-                ],
-            ],
-        ]);
-
-        $response = $this->post('/actors', $data);
         $response->assertOk();
         $this->assertCount(2, Actor::find(3)->kinships);
         $this->assertCount(2, Actor::find(3)->kinships[0]->references);
         $this->assertCount(1, Actor::find(3)->kinships[1]->references);
 
-        $response = $this->patch('/actors/3', self::data([
-            'kinships' => [
-                0 => [
-                    'kinship_id' => 2,
-                    'relative_id' => 1,
-                    'references' => 2,
-                ]
-            ],
-        ]));
+        // Removing the first ActorKinship
+        $actor = $this->getActor([0, 1, [2]]);
+        $response = $this->patch('/actors/3', $actor);
+
+        $response->assertOk();
         $this->assertCount(1, Actor::find(3)->kinships);
         $this->assertCount(1, Actor::find(3)->kinships[0]->references);
         $this->assertCount(1, DB::table('referencables')->get());
