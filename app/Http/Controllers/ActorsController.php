@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Actor;
-use App\Reference;
 use App\ActorKinship;
-use App\Dates;
 use App\Http\Requests\StoreActor;
 
 class ActorsController extends Controller
@@ -35,51 +32,36 @@ class ActorsController extends Controller
     }
 
     protected function setKinships(Actor $actor, StoreActor $request) {
-        $kinships = $request->input('kinships', []);
-
-        // Retrieve current ActorKinships
         $oldActorKinships = $actor->kinships->modelKeys();
 
-        // Update or create ActorKinships
+        $kinships = $request->input('kinships', []);
         $actorKinships = [];
         foreach(array_values($kinships) as $i => $kinship) {
-            $kinship['actor_id'] = $actor->getKey();
-
-            $actorKinship = ActorKinship::
-                where(function($query) use ($kinship) {
-                    $query
-                        ->where('relative_id', $kinship['relative_id'])
-                        ->where('actor_id', $kinship['actor_id']);
-                })
-                ->orWhere(function($query) use ($kinship) {
-                    $query
-                        ->where('actor_id', $kinship['relative_id'])
-                        ->where('relative_id', $kinship['actor_id']);
-                })
-                ->first();
-
-            if ($actorKinship) {
-                if ($actorKinship->kinship_id != $kinship['kinship_id']) {
-                    $actorKinship->kinship_id = $kinship['kinship_id'];
-                    $actorKinship->save();
-                }
-            } else {
-                $actorKinship = new ActorKinship;
-
-                $actorKinship->kinship_id = $kinship['kinship_id'];
-                $actorKinship->actor_id = $kinship['actor_id'];
-                $actorKinship->relative_id = $kinship['relative_id'];
-
-                $actorKinship->save();
-            }
-
-            $prefix = 'kinships.' . $i;
-            $actorKinship->setReferences($request, $prefix);
-
-            $actorKinships[]= $actorKinship->getKey();
+            $actorKinships[]= $this->setKinship($actor, $request, $i, $kinship)->id;
         }
 
-        // Remove old ActorKinships
         ActorKinship::destroy(array_diff($oldActorKinships, $actorKinships));
+    }
+
+    protected function setKinship(Actor $actor, StoreActor $request, $i, $kinship)
+    {
+        $actorKinship = $actor->getKinshipWith($kinship['relative_id']);
+
+        if (!$actorKinship) {
+            $actorKinship = new ActorKinship;
+
+            $actorKinship->kinship_id = $kinship['kinship_id'];
+            $actorKinship->actor_id = $actor->id;
+            $actorKinship->relative_id = $kinship['relative_id'];
+
+            $actorKinship->save();
+        } else if ($actorKinship->kinship_id != $kinship['kinship_id']) {
+            $actorKinship->kinship_id = $kinship['kinship_id'];
+            $actorKinship->save();
+        }
+
+        $actorKinship->setReferences($request, 'kinships.' . $i);
+
+        return $actorKinship;
     }
 }
