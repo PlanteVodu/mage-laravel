@@ -37,11 +37,11 @@ class ActorsController extends Controller
     protected function setKinships(Actor $actor, StoreActor $request) {
         $kinships = $request->input('kinships', []);
 
-        // Retrieve previous Actor's Kinships
-        $existingKinships = $actor->kinships;
+        // Retrieve current ActorKinships
+        $oldActorKinships = $actor->kinships->modelKeys();
 
-        // Update or create the Actor's Kinships
-        $updatedActorKinships = [];
+        // Update or create ActorKinships
+        $actorKinships = [];
         foreach(array_values($kinships) as $i => $kinship) {
             $kinship['actor_id'] = $actor->getKey();
 
@@ -58,19 +58,12 @@ class ActorsController extends Controller
                 })
                 ->first();
 
-            // dump($actorKinship);
-            // if ($actorKinship) {
-            //     dump($actorKinship->references);
-            // }
-
             if ($actorKinship) {
-                // dump("ActorKinship exists");
                 if ($actorKinship->kinship_id != $kinship['kinship_id']) {
                     $actorKinship->kinship_id = $kinship['kinship_id'];
                     $actorKinship->save();
                 }
             } else {
-                // dump("New ActorKinship");
                 $actorKinship = new ActorKinship;
 
                 $actorKinship->kinship_id = $kinship['kinship_id'];
@@ -83,11 +76,10 @@ class ActorsController extends Controller
             $prefix = 'kinships.' . $i;
             $actorKinship->setReferences($request, $prefix);
 
-            $updatedActorKinships[]= $actorKinship->getKey();
+            $actorKinships[]= $actorKinship->getKey();
         }
 
-        // Remove the old Actor's Kinships
-        $modelsToRemove = array_diff($existingKinships->modelKeys(), $updatedActorKinships);
-        ActorKinship::destroy($modelsToRemove);
+        // Remove old ActorKinships
+        ActorKinship::destroy(array_diff($oldActorKinships, $actorKinships));
     }
 }
