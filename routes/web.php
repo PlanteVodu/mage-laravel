@@ -11,8 +11,6 @@
 |
 */
 
-Route::post('/actors', 'ActorsController@store');
-Route::patch('/actors/{actor}', 'ActorsController@update');
-
+Route::resource('actors', 'ActorController');
 Route::resource('references', 'ReferenceController');
 Route::resource('kinships', 'KinshipController');

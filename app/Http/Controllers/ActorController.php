@@ -6,17 +6,83 @@ use App\Actor;
 use App\ActorKinship;
 use App\Http\Requests\StoreActor;
 
-class ActorsController extends Controller
+class ActorController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        //
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(StoreActor $request)
     {
         $actor = new Actor;
-        $this->setActorData($actor, $request);
+        $this->setActorData(new Actor, $request);
     }
 
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Actor  $actor
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Actor $actor)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Actor  $actor
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Actor $actor)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Actor  $actor
+     * @return \Illuminate\Http\Response
+     */
     public function update(StoreActor $request, Actor $actor)
     {
         $this->setActorData($actor, $request);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Actor  $actor
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Actor $actor)
+    {
+        //
     }
 
     protected function setActorData(Actor $actor, StoreActor $request)
