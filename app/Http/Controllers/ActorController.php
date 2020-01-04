@@ -104,13 +104,13 @@ class ActorController extends Controller
         $kinships = $request->input('kinships', []);
         $actorKinships = [];
         foreach(array_values($kinships) as $i => $kinship) {
-            $actorKinships[]= $this->setKinship($actor, $request, $i, $kinship)->id;
+            $actorKinships[]= $this->setKinship($actor, $kinship)->id;
         }
 
         ActorKinship::destroy(array_diff($oldActorKinships, $actorKinships));
     }
 
-    protected function setKinship(Actor $actor, StoreActor $request, $i, $kinship)
+    protected function setKinship(Actor $actor, $kinship)
     {
         if ($kinship['primary']) {
             $kinship['actor_id'] = $kinship['relative_id'];
@@ -124,7 +124,7 @@ class ActorController extends Controller
             Arr::only($kinship, ['kinship_id'])
         );
 
-        $actorKinship->setReferences($request, 'kinships.' . $i);
+        $actorKinship->setReferences($kinship);
 
         return $actorKinship;
     }
