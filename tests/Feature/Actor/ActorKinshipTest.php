@@ -152,14 +152,8 @@ class ActorKinshipFeatureTest extends TestCase
     public function test_references_are_removed_when_actor_kinship_is_removed()
     {
         $actor = $this->getActor([1, 0, [1, 2]], [0, 1, [2]]);
-        $response = $this->post('/actors', $actor);
+        $this->post('/actors', $actor);
 
-        $response->assertOk();
-        $this->assertCount(2, Actor::find(3)->kinships);
-        $this->assertCount(2, Actor::find(3)->kinships[0]->references);
-        $this->assertCount(1, Actor::find(3)->kinships[1]->references);
-
-        // Removing the first ActorKinship
         $actor = $this->getActor([0, 1, [2]]);
         $response = $this->patch('/actors/3', $actor);
 
