@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actor;
 use App\ActorKinship;
 use App\Http\Requests\StoreActor;
+use Illuminate\Support\Arr;
 
 class ActorController extends Controller
 {
@@ -111,20 +112,17 @@ class ActorController extends Controller
 
     protected function setKinship(Actor $actor, StoreActor $request, $i, $kinship)
     {
-        $actorKinship = $actor->getKinshipWith($kinship['relative_id']);
-
-        if (!$actorKinship) {
-            $actorKinship = new ActorKinship;
-
-            $actorKinship->kinship_id = $kinship['kinship_id'];
-            $actorKinship->actor_id = $actor->id;
-            $actorKinship->relative_id = $kinship['relative_id'];
-
-            $actorKinship->save();
-        } else if ($actorKinship->kinship_id != $kinship['kinship_id']) {
-            $actorKinship->kinship_id = $kinship['kinship_id'];
-            $actorKinship->save();
+        if ($kinship['primary']) {
+            $kinship['actor_id'] = $kinship['relative_id'];
+            $kinship['relative_id'] = $actor->id;
+        } else {
+            $kinship['actor_id'] = $actor->id;
         }
+
+        $actorKinship = ActorKinship::updateOrCreate(
+            Arr::only($kinship, ['actor_id', 'relative_id']),
+            Arr::only($kinship, ['kinship_id'])
+        );
 
         $actorKinship->setReferences($request, 'kinships.' . $i);
 

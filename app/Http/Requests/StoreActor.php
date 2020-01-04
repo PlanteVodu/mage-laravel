@@ -36,6 +36,10 @@ class StoreActor extends FormRequest
                 'exists:actors,id',
                 'required',
             ],
+            'kinships.*.primary' => [
+                'required',
+                'boolean',
+            ],
         ];
 
         $rules = array_merge(

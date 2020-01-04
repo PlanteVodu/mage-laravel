@@ -43,12 +43,13 @@ class ActorKinshipFeatureTest extends TestCase
         return $actorKinships;
     }
 
-    protected function getKinshipArray($kinshipId, $relativeId, $references = [])
+    protected function getKinshipArray($kinshipId, $relativeId, $primary = false, $references = [])
     {
         return [
             'kinship_id' => $this->kinshipsKeys[$kinshipId],
             'relative_id' => $this->kinshipsKeys[$relativeId],
             'references' => $references,
+            'primary' => $primary,
         ];
     }
 
@@ -63,6 +64,24 @@ class ActorKinshipFeatureTest extends TestCase
         $this->assertEquals(1, Actor::find(3)->kinships[1]->relative(3)->id);
         $this->assertEquals(1, Actor::find(3)->kinships[0]->kinship()->id);
         $this->assertEquals(2, Actor::find(3)->kinships[1]->kinship()->id);
+    }
+
+    public function test_kinships_direction_can_be_modified()
+    {
+        $actor = $this->getActor([0, 1, true], [1, 0, true]);
+        $response = $this->post('/actors', $actor);
+
+        $response->assertOk();
+        $this->assertCount(2, Actor::find(3)->kinships);
+        $this->assertEquals(2, Actor::find(3)->kinships[0]->relative(3)->id);
+        $this->assertEquals(1, Actor::find(3)->kinships[1]->relative(3)->id);
+        $this->assertEquals(1, Actor::find(3)->kinships[0]->kinship()->id);
+        $this->assertEquals(2, Actor::find(3)->kinships[1]->kinship()->id);
+
+        $this->assertEquals(3, Actor::find(3)->kinships[0]->relative_id);
+        $this->assertEquals(2, Actor::find(3)->kinships[0]->actor_id);
+        $this->assertEquals(3, Actor::find(3)->kinships[1]->relative_id);
+        $this->assertEquals(1, Actor::find(3)->kinships[1]->actor_id);
     }
 
     public function test_kinships_can_be_updated()
@@ -80,6 +99,27 @@ class ActorKinshipFeatureTest extends TestCase
         $this->assertEquals(1, $kinships->values()->get(0)->relative(3)->id);
         $this->assertEquals(2, $kinships->values()->get(1)->kinship()->id);
         $this->assertEquals(2, $kinships->values()->get(1)->relative(3)->id);
+    }
+
+    public function test_kinships_direction_can_be_updated()
+    {
+        $actor = $this->getActor([0, 1], [1, 0]);
+        $this->post('/actors', $actor);
+
+        $actor = $this->getActor([0, 1, true], [1, 0, true]);
+        $response = $this->patch('/actors/3', $actor);
+
+        $response->assertOk();
+        $this->assertCount(2, Actor::find(3)->kinships);
+        // dd(ActorKinship::all());
+        $this->assertCount(2, ActorKinship::all());
+        $this->assertEquals(2, Actor::find(3)->kinships[0]->relative(3)->id);
+        $this->assertEquals(1, Actor::find(3)->kinships[1]->relative(3)->id);
+
+        $this->assertEquals(3, Actor::find(3)->kinships[0]->relative_id);
+        $this->assertEquals(2, Actor::find(3)->kinships[0]->actor_id);
+        $this->assertEquals(3, Actor::find(3)->kinships[1]->relative_id);
+        $this->assertEquals(1, Actor::find(3)->kinships[1]->actor_id);
     }
 
     public function test_kinships_can_be_removed()
@@ -131,7 +171,7 @@ class ActorKinshipFeatureTest extends TestCase
 
     public function test_actor_kinship_references_can_be_added()
     {
-        $actor = $this->getActor([1 , 0, [1, 2]], [0, 1, [2]]);
+        $actor = $this->getActor([1 , 0, true, [1, 2]], [0, 1, true, [2]]);
         $response = $this->post('/actors', $actor);
         $response->assertOk();
         $this->assertCount(2, Actor::find(3)->kinships);
@@ -144,7 +184,7 @@ class ActorKinshipFeatureTest extends TestCase
 
     public function test_actor_kinship_references_can_be_removed()
     {
-        $actor = $this->getActor([1, 0, [1, 2]]);
+        $actor = $this->getActor([1, 0, true, [1, 2]]);
         $response = $this->post('/actors', $actor);
 
         $actor = $this->getActor([1, 0]);
@@ -155,10 +195,10 @@ class ActorKinshipFeatureTest extends TestCase
 
     public function test_references_are_removed_when_actor_kinship_is_removed()
     {
-        $actor = $this->getActor([1, 0, [1, 2]], [0, 1, [2]]);
+        $actor = $this->getActor([1, 0, true, [1, 2]], [0, 1, true, [2]]);
         $this->post('/actors', $actor);
 
-        $actor = $this->getActor([0, 1, [2]]);
+        $actor = $this->getActor([0, 1, true, [2]]);
         $response = $this->patch('/actors/3', $actor);
 
         $response->assertOk();
@@ -170,8 +210,8 @@ class ActorKinshipFeatureTest extends TestCase
     public function test_actor_kinships_are_deleted_when_actor_is_deleted()
     {
         $kinships = $this->getActorKinshipsArray(
-            [1, 0, [1, 2]],
-            [0, 1, [2]]
+            [1, 0, true, [1, 2]],
+            [0, 1, true, [2]]
         );
 
         $actor = factory(Actor::class)->make([
