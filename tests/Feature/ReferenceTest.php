@@ -77,4 +77,15 @@ class ReferenceTest extends TestCase
         $this->assertEquals('New name', Reference::first()->name);
         $this->assertEquals('New notes', Reference::first()->note);
     }
+
+    public function test_a_reference_can_be_deleted()
+    {
+        $reference = factory(Reference::class)->create();
+
+        $this->assertCount(1, Reference::all());
+
+        $response = $this->delete('/references/' . $reference->id);
+
+        $this->assertCount(0, Reference::all());
+    }
 }

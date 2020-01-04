@@ -81,7 +81,7 @@ class ReferenceController extends Controller
      */
     public function destroy(Reference $reference)
     {
-        //
+        $reference->delete();
     }
 
     protected function validateRequest(Request $request)
