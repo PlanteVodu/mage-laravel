@@ -118,4 +118,15 @@ class ActorTest extends TestCase
         $response->assertSessionHasErrors('date_start');
         $response->assertSessionHasErrors('date_end');
     }
+
+    public function test_an_actor_can_be_deleted()
+    {
+        $actor = factory(Actor::class)->create();
+
+        $this->assertCount(1, Actor::all());
+
+        $response = $this->delete('/actors/' . $actor->id);
+
+        $this->assertCount(0, Actor::all());
+    }
 }

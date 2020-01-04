@@ -82,7 +82,7 @@ class ActorController extends Controller
      */
     public function destroy(Actor $actor)
     {
-        //
+        $actor->delete();
     }
 
     protected function setActorData(Actor $actor, StoreActor $request)
