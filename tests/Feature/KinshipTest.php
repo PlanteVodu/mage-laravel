@@ -57,4 +57,16 @@ class KinshipTest extends TestCase
         $this->assertEquals('New name', Kinship::first()->name);
         $this->assertEquals(2, Kinship::first()->coefficient);
     }
+
+    public function test_a_kinship_can_be_deleted()
+    {
+        $kinship = factory(Kinship::class)->create();
+
+        $this->assertCount(1, Kinship::all());
+
+        $response = $this->delete('/kinships/' . $kinship->id);
+
+        $this->assertCount(0, Kinship::all());
+    }
+
 }

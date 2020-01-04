@@ -80,7 +80,7 @@ class KinshipController extends Controller
      */
     public function destroy(Kinship $kinship)
     {
-        //
+        $kinship->delete();
     }
 
     protected function validateRequest(Request $request)
