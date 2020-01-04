@@ -13,6 +13,20 @@ class Actor extends Model
 
     protected $guarded = [];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        self::deleting(function (Actor $actor) {
+            $actor->references()->detach();
+            foreach($actor->kinships as $actorKinship) {
+                // We must delete ActorKinships one by one to
+                // delete their References
+                $actorKinship->delete();
+            }
+        });
+    }
+
     public function references()
     {
         return $this->morphToMany('App\Reference', 'referencable');
